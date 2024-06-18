@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class Dialogue:MonoBehaviour
+public class Dialogue
 {
     [Tooltip("캐릭터 이름")]
     public string name;
 
     [Tooltip("대사 내용")]
     public string[] context;
+    public string choice;
 }
 [System.Serializable]
 public class DialogueEvent
