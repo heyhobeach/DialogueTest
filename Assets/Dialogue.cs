@@ -11,6 +11,7 @@ public class Dialogue
     [Tooltip("대사 내용")]
     public string[] context;
     public string choice;
+    public string id;
 }
 [System.Serializable]
 public class DialogueEvent
