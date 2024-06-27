@@ -5,19 +5,20 @@ using UnityEngine;
 [System.Serializable]
 public class Dialogue
 {
-    [Tooltip("Ä³¸¯ÅÍ ÀÌ¸§")]
+    [Tooltip("ìºë¦­í„° ì´ë¦„")]
     public string name;
 
-    [Tooltip("´ë»ç ³»¿ë")]
+    [Tooltip("ëŒ€ì‚¬ ë‚´ìš©")]
     public string[] context;
     public string choice;
     public string id;
+    public string[][] command;
 }
 [System.Serializable]
 public class DialogueEvent
 {
     public string name;
-    public Vector2 line;//´ë»ç ÃßÃâÀ» À§ÇØ?
-    public Dialogue[] dialouses;//¿©·¯¸íÀÌ ¸» ÇÏ´Â°ÍÀÌ±â ´ë¹®¿¡
+    public Vector2 line;//ëŒ€ì‚¬ ì¶”ì¶œì„ ìœ„í•´?
+    public Dialogue[] dialouses;//ì—¬ëŸ¬ëª…ì´ ë§ í•˜ëŠ”ê²ƒì´ê¸° ëŒ€ë¬¸ì—
     
 }

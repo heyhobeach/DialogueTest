@@ -9,18 +9,24 @@ public class UIManager : MonoBehaviour
     //public Text
     public TMP_Text namemesh;
     public TMP_Text content;
+
+    IEnumerator co = null;
+
+    [SerializeField]
+    public float typing_speed = 0.05f;
     //public InteractionEvent interactionEvent;
 
     // Start is called before the first frame update
     void Start()
     {
+        co = Typing("");
         //namemesh = GetComponent<TextMeshPro>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //namemesh.text = "Á¶Çö¼·";
+        //namemesh.text = "ì¡°í˜„ì„­";
     }
 
     public void Setname(string name)
@@ -30,7 +36,24 @@ public class UIManager : MonoBehaviour
 
     public void SetContent(string _content)
     {
-        content.text = _content;
+        StopCoroutine(co);
+        co = Typing(_content);
+        StartCoroutine(co);
+        //content.text = _content;
+    }
+
+    IEnumerator Typing(string str)
+    {
+        content.text = null;
+        if (str == "")
+        {
+            yield return null;
+        }
+        for (int i = 0; i < str.Length; i++)
+        {
+            content.text+= str[i];
+            yield return new WaitForSeconds(typing_speed);
+        }
     }
 
     public void test()

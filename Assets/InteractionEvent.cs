@@ -1,6 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
+using System.Linq;
 
 public class InteractionEvent : MonoBehaviour
 {
@@ -22,26 +27,39 @@ public class InteractionEvent : MonoBehaviour
             indexNum = DatabaseManager.instance.indexList.Count - 1;
         }
         Debug.Log("indexNum"+indexNum);
-        dialogue.line.y = DatabaseManager.instance.indexList[indexNum];//¸¶Áö¸· ¶óÀÎÀ» ¹Ş¾Æ¿À±â´Â ÇÏÁö¸¸ ÇÊ¿äÇÑ°Ç ¸¶Áö¸·¶óÀÎÀÌ ¾Æ´Ñ ÀÎµ¦½º? µñ¼Å³Ê¸®¿¡ µé¾î°¡´Â ±× y°¡ ÇÊ¿äÇÔ
+        dialogue.line.y = DatabaseManager.instance.indexList[indexNum];//ë§ˆì§€ë§‰ ë¼ì¸ì„ ë°›ì•„ì˜¤ê¸°ëŠ” í•˜ì§€ë§Œ í•„ìš”í•œê±´ ë§ˆì§€ë§‰ë¼ì¸ì´ ì•„ë‹Œ ì¸ë±ìŠ¤? ë”•ì…”ë„ˆë¦¬ì— ë“¤ì–´ê°€ëŠ” ê·¸ yê°€ í•„ìš”í•¨
 
-        Debug.Log(string.Format("½ÃÀÛÁöÁ¡{0} ³¡ ÁöÁ¡{1}",dialogue.line.x,dialogue.line.y));
-        dialogue.dialouses = DatabaseManager.instance.GetDialogues((int)dialogue.line.x, (int)dialogue.line.y);//y°ª Ã£¾Æ¿À´Â ¹ı
+        Debug.Log(string.Format("ì‹œì‘ì§€ì {0} ë ì§€ì {1}",dialogue.line.x,dialogue.line.y));
+        dialogue.dialouses = DatabaseManager.instance.GetDialogues((int)dialogue.line.x, (int)dialogue.line.y);//yê°’ ì°¾ì•„ì˜¤ëŠ” ë²•
         
-        Debug.Log("µ¥ÀÌÅÍ °¡Á®¿È");
+        Debug.Log("ë°ì´í„° ê°€ì ¸ì˜´");
         return dialogue.dialouses;
     }
 
     private void Update()
     {
         //GetDialogue();
-        if (Input.GetKeyDown(KeyCode.F)&(num<dialogue.dialouses.Length))//lineÀ» Á¶Àı ÇØ¾ßÇÔ ´ëÈ­°¡ ³¡³ª´Â ½ÃÁ¡À» Á¤ÇÏ·Á¸é line.y¸¦ ¼³Á¤ÇØ¾ßÇÔ
+        if (Input.GetKeyDown(KeyCode.F)&(num<dialogue.dialouses.Length))//lineì„ ì¡°ì ˆ í•´ì•¼í•¨ ëŒ€í™”ê°€ ëë‚˜ëŠ” ì‹œì ì„ ì •í•˜ë ¤ë©´ line.yë¥¼ ì„¤ì •í•´ì•¼í•¨
         {
 
             //Debug.Log(string.Format("{0}", dialogue.dialouses[num].context[0]));
             //ui.Setname(dialogue.dialouses[num].name);
-            gameObject.GetComponentInParent<UIManager>().Setname(dialogue.dialouses[num].name);//ÀÌ¸§ º¯°æ µÇ´ÂÁß ¸¶Âù°¡Áö·Î ³»¿ëµµ °°ÀÌ ÇÏ¸é µÉµí
+            gameObject.GetComponentInParent<UIManager>().Setname(dialogue.dialouses[num].name);//ì´ë¦„ ë³€ê²½ ë˜ëŠ”ì¤‘ ë§ˆì°¬ê°€ì§€ë¡œ ë‚´ìš©ë„ ê°™ì´ í•˜ë©´ ë ë“¯
             Debug.Log(dialogue.dialouses[num].context.Length);
-            
+            //Debug.Log(string.Format("ê¸¸ì´{0}", dialogue.dialouses[num].command.Length));
+            //foreach(var coms in dialogue.dialouses[num].command)
+            //{
+            //    foreach (var com in coms)
+            //    {
+            //        Debug.Log(string.Format("ì»¤ë§¨ë“œ ì²´í¬ =>{0}", com));
+            //    }
+            //}
+
+            foreach (var coms in dialogue.dialouses[num].command)
+            {
+                CallFunction(coms);
+            }
+
             if (dialogue.dialouses[num].context.Length-1 > contentNum)
             {
                 gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));
@@ -54,7 +72,7 @@ public class InteractionEvent : MonoBehaviour
         }
         if (num == dialogue.dialouses.Length)
         {
-            Debug.Log("´ëÈ­³¡");
+            Debug.Log("ëŒ€í™”ë");
 
             if (Input.GetKeyDown(KeyCode.X))
             {
@@ -65,6 +83,91 @@ public class InteractionEvent : MonoBehaviour
                 num = 0;
             }
         }
+    }
+
+    private void CallFunction(string[] _functions)
+    {
+        string SPLIT_NUM = @"([a-z]+|\ )+";//ê³µë°± ë¶„ë¦¬ ì •ê·œì‹//ìƒˆë¡œìš´ì‹([a-z]+|\ )+
+        string GET_COMMAND = @"[a-z]{1,}";
+        foreach (var func in _functions)
+        {
+
+            string[] strarr = Regex.Split(func, SPLIT_NUM);
+            string[] filteredSubstrings = strarr.Where(s => s != Regex.Match(s,SPLIT_NUM).ToString()).ToArray();
+            foreach (var str in filteredSubstrings)
+            {
+                Debug.Log(string.Format("í…ŒìŠ¤íŠ¸str {0}", str));
+            }
+            int n;
+            string[] numarr= Array.FindAll(strarr,s=>!string.IsNullOrEmpty(s)&&(int.TryParse(s,out n)));
+            //Debug.Log(string.Format("ìˆ«ì ê¸¸ì´{0}", numarr.Length));
+            //foreach(var str in numarr)
+            //{
+            //    Debug.Log(string.Format("ëª…ë ¹ì–´ ì¸ì{0}", str));
+            //}
+            //if (strarr[0].ToString() =="") { Debug.Log("ìˆ«ì ì—†ëŠ” ëª…ë ¹ì–´"); }
+            //else
+            //{
+            //    Debug.Log("ìˆ«ì ìˆëŠ” ëª…ë ¹ì–´");
+            //}
+            Debug.Log(string.Format("mat => {0}", func));
+            var mat = Regex.Matches(func,GET_COMMAND);
+            Debug.Log(string.Format("ì»¤ë§¨ë“œ ì²´í¬ =>{0}", mat));
+            switch (mat[0].ToString())
+            {
+                case "size":
+                    { size(); }
+                    break;
+                case "speed":
+                    { speed(); }
+                    break;
+                case "time":
+                    { time(); }
+                    break;
+                case "brutal":
+                    { brutal(); }
+                    break;
+                case "police":
+                    { police(); } 
+                    break;
+                case "play":
+                    { play(); }
+                    break;
+                case "anime":
+                    { anime(); }
+                    break;
+            
+            }
+        }
+    }
+
+    public void size()//ì‹œì‘ ë ìˆ˜ì¹˜
+    {
+        Debug.Log("switch_size");
+    }
+    public void speed()//ì‹œì‘ ë ìˆ˜ì¹˜
+    {
+        Debug.Log("switch_speed");
+    }
+    public void time()
+    {
+        Debug.Log("switch_time");
+    }
+    public void brutal()
+    {
+        Debug.Log("switch_brutal");
+    }
+    public void police()
+    {
+        Debug.Log("switch_plice");
+    }
+    public void play()
+    {
+        Debug.Log("switch_play");
+    }
+    public void anime()//ì‹œì‘ ë ì¢…ë¥˜
+    {
+        Debug.Log("switch_anime");
     }
 
     private void Start()

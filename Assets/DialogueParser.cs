@@ -8,44 +8,57 @@ public class DialogueParser : MonoBehaviour
 {
     // Start is called before the first frame update
 
-    string SPLIT_RE = @",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";//Á¤±Ô½Ä from chat gpt
+    string SPLIT_RE = @",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";//ì •ê·œì‹ from chat gpt
+    string SPLIT_COMMAND_PASER = @"[""!,]";//ëª…ë ¹ì–´ ë¶„ë¦¬ ì •ê·œì‹
+    string SPLIT_NUM = @"([^1-9]{1,})";//ê³µë°± ë¶„ë¦¬ ì •ê·œì‹
     string[] row;
+    string[] command;
     //public int start = 0, end = 0;
+    //í…ŒìŠ¤íŠ¸
     public Dialogue[] Parse(string _CSVFileName)
     {
         int chap = 1;
         List<Dialogue> dialoguesList = new List<Dialogue>();
-        TextAsset csvData = Resources.Load<TextAsset>(_CSVFileName);//csvÆÄÀÏ ¹Ş¾Æ¿À´ÂÁß
+        TextAsset csvData = Resources.Load<TextAsset>(_CSVFileName);//csvíŒŒì¼ ë¡œë“œ
 
         if(csvData != null)
         {
-            //Debug.Log("ºÒ·¯¿È");
+            //Debug.Log("ï¿½Ò·ï¿½ï¿½ï¿½");
         }
         else
         {
-            //Debug.Log("¸ø ºÒ·¯¿È");
+            //Debug.Log("ï¿½ï¿½ ï¿½Ò·ï¿½ï¿½ï¿½");
         }
 
-        string[] data =csvData.text.Split(new char[] { '\n' });//? split('\n')
+        string[] data =csvData.text.Split(new char[] { '\n' });//ê³µë°±ë¶„ë¦¬ split('\n')
         
-        for(int i=1+DatabaseManager.instance.lastIndex;i<data.Length-1; )//ID	Ä³¸¯ÅÍ ÀÌ¸§	´ë»ç	ÀÌ·±°Í ¾ø´Ù¸é 0 ºÎÅÍ
+        for(int i=1+DatabaseManager.instance.lastIndex;i<data.Length-1; )//ID 1ë²ˆ ë¶€í„° ìœ„ì—ëŠ” ë‹¤ë¥¸ê±°ë¼ì„œ í•„ìš”ì—†ìŒ
         {
+            int command_num = 0;
+            List<string[]> commandList = new List<string[]>();  
             row = Regex.Split(data[i], SPLIT_RE);
-            Dialogue dialogue = new Dialogue();
+            Dialogue dialogue = new Dialogue();//
+            //dialogue.command = new string[10][];
             dialogue.name = row[2];
             dialogue.id = row[0];
+            command = Regex.Split(row[4], SPLIT_COMMAND_PASER);
+            command = spaceremove(command);
+            
+            //dialogue.command[command_num++] = command;
             bool isEnd = false;
             //Debug.Log(data[i]);
 
             List<string> contextList = new List<string>();
-            do//¸¸¾à id°¡ °ø¹éÀÌ¸é ¿©±â¼­ Ã³¸®ÇØ¾ßÇÔ
-            {                
+            do//ë™ì¼ idì—ì„œ ëŒ€í™” ì°½ ë³€ê²½ í•œ ê²½ìš° í‘œì‹œ
+            {
+                commandList.Add(command);
+                //dialogue.command[command_num++] = command;
                 contextList.Add(row[3]);//content
-                if (row[3].ToString() == "")//´ëÈ­ ³¡³ª´Â ½ÃÁ¡
+                if (row[3].ToString() == "")//ëŒ€í™”ê°€ ëë‚œ ê²½ìš° ëŒ€í™”ì°½ ê³µë°±
                 {
                     isEnd = true;
-                    Debug.Log(string.Format("content =>null"));//¿©±â ¾Æ·¡ ºÎºĞ¿¡ ¹è¿­À» Áö¿ö¾ßÇÔ
-                    contextList.RemoveAt(contextList.Count-1);//¸¶Áö¸· ¶óÀÎ »èÁ¦(°³¼±Á¡ Áö±İÀº ÀÌ°Ô °ø¹éÀ» »ğÀÔÇÏ°í °ø¹éÀ» »èÁ¦ÇÏ´Â ºÒ ÇÊ¿äÇÑ ÀÛ¾÷À» ÇÔ µû¶ó¼­ °ø¹éÀ» ¾Æ¿¡ ¾È ³Ö´ÂÂÊÀ¸·Î ÀÛ¾÷ ÇØ¾ßÇÒµí)
+                    Debug.Log(string.Format("content =>null"));//ëŒ€í™” ëë‚œê±° í™•ì¸ìš© debug
+                    contextList.RemoveAt(contextList.Count-1);//ë§ˆì§€ë§‰ì— ì‚½ì¸ ë˜ì–´ìˆëŠ” ê³µë°± ì¹¸ ì œê±°ìš©
 
                 }
                 else
@@ -53,28 +66,40 @@ public class DialogueParser : MonoBehaviour
                     Debug.Log(string.Format("content =>{0}", row[3]));
                 }
 
-                //dialogue.choice = row[4];
                 if (++i < data.Length-1)
                 {
 
-                    //Debug.Log(string.Format("i´Â {0} {1} {2}", i, row[1], row[3]));
-                    row = Regex.Split(data[i], SPLIT_RE);//¹øÈ£,ÀÌ¸§,³»¿ë ÀÌ·¸°Ô ÀüºÎ ÀÖ´Â µ¥ÀÌÅÍ¸¦ À§ÇÑ °ÍÀÌ ¾Æ´Ñ ±×³É ³»¿ë¸¸ ÀÖ´Â µ¥ÀÌÅÍ¸¦ ³ª´©´À ¤¤ÀÛ¾÷
-                       
+                    //Debug.Log(string.Format("iï¿½ï¿½ {0} {1} {2}", i, row[1], row[3]));
+                    
+                    foreach(var com in command)
+                    {
+                        Debug.Log(string.Format("ï¿½ï¿½ï¿½É¾ï¿½ {0}", com));
+                    }
+                    row = Regex.Split(data[i], SPLIT_RE);//do whileë“¤ì–´ì™€ì„œ csv ë¶„ë¦¬ ëª» í•œ ê²½ìš° ë¶„ë¦¬
+                    command = Regex.Split(row[4], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+                    command = spaceremove(command);
+
                 }
                 else
                 {
-                    break;//ÀÌ°Ô ¾øÀ¸¸é ¸ø ¸ØÃã
+                    break;//ì´ê±° ì—†ìœ¼ë©´ 
                 }
 
             } while (row[0].ToString() == "");
+            dialogue.command = commandList.ToArray();
+
+            foreach(var coms in dialogue.command)
+            {
+                foreach (var com in coms) { }
+            }
             dialogue.context = contextList.ToArray();
 
-            dialoguesList.Add(dialogue); //ÀÌ·¸°Ô ÇÏ´Â°Ô string ¹è¿­À» ³Ö±â À§ÇØ
+            dialoguesList.Add(dialogue); //ëŒ€í™” ë‚´ìš© ë¦¬ìŠ¤íŠ¸ì— ì‚½ì…
             if (isEnd)
             {
-                Debug.Log("Á¾·á");
-                Debug.Log(dialoguesList[dialoguesList.Count - 1].id);//Á¾·á½ÃÁ¡ Á÷Àü±îÁö,ÀÌ°Ô ¿©·¯°³ ³ª¿Í¾ßÇÔ
-                DatabaseManager.instance.endLine = int.Parse(dialoguesList[dialoguesList.Count - 1].id);//Áö±İ parser°¡ ¾îµğ±îÁö ³ª¿ÃÁö ¸ğ¸£°ÚÀ½//end¶óÀÎ±îÁö ²÷±è//ÀÌÈÄ start¿Í end¼öÁ¤ÇØ¾ßÇÔ
+                //Debug.Log("ì¢…ë£Œ");
+                Debug.Log(dialoguesList[dialoguesList.Count - 1].id);//idë²ˆí˜¸ í™•ì¸
+                DatabaseManager.instance.endLine = int.Parse(dialoguesList[dialoguesList.Count - 1].id); //ì§€ê¸ˆ parserê°€ ì–´ë””ê¹Œì§€ ë‚˜ì˜¬ì§€ ëª¨ë¥´ê² ìŒ//endë¼ì¸ê¹Œì§€ ëŠê¹€//ì´í›„ startì™€ endìˆ˜ì •í•´ì•¼í•¨
                 DatabaseManager.instance.indexList.Add(int.Parse(dialoguesList[dialoguesList.Count - 1].id));
                 //break;
             }
@@ -82,10 +107,10 @@ public class DialogueParser : MonoBehaviour
             //Debug.Log(row[1]);
 
         }
-        //DatabaseManager.instance.endLine = int.Parse(row[0]);//¸¶Áö¸· id °¡Á®¿À±â À§ÇÔ
+        //DatabaseManager.instance.endLine = int.Parse(row[0]);//ë§ˆì§€ë§‰ id ê°€ì ¸ì˜¤ê¸° ìœ„í•¨
         return dialoguesList.ToArray();
     }
-    private int EndDialogue(int endIndex) //´ëÈ­ Á¾·á ½ÃÁ¡À» int ÇüÀ¸·Î ¸¶Áö¸· ´ëÈ­ ºÎºĞÀ» ³Ñ°ÜÁÙ °ÍÀÓ
+    private int EndDialogue(int endIndex)//ëŒ€í™” ì¢…ë£Œ ì‹œì ì„ int í˜•ìœ¼ë¡œ ë§ˆì§€ë§‰ ëŒ€í™” ë¶€ë¶„ì„ ë„˜ê²¨ì¤„ ê²ƒì„
     {
         if (row[0].ToString() == "")
         {
@@ -94,10 +119,27 @@ public class DialogueParser : MonoBehaviour
         }
         return endIndex;
     }
-    
+
+    private string[] spaceremove(string[] com)
+    {
+        List<string> temp = new List<string>();
+        int index = 0;
+        foreach(var j in com)
+        {
+            if (j.ToString() != "")
+            {
+                temp.Add(j);
+            }
+        }
+
+        return temp.ToArray();
+
+    }
+
+
 
     private void Start()
     {
-        //Parse("Å×½ºÆ®ÆÄÀÏ");//
+        //Parse("í…ŒìŠ¤íŠ¸íŒŒì¼");
     }
 }
