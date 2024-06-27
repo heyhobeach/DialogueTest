@@ -94,10 +94,19 @@ public class InteractionEvent : MonoBehaviour
 
             string[] strarr = Regex.Split(func, SPLIT_NUM);
             string[] filteredSubstrings = strarr.Where(s => s != Regex.Match(s,SPLIT_NUM).ToString()).ToArray();
-            foreach (var str in filteredSubstrings)
+
+            if(filteredSubstrings.Length > 0)
             {
-                Debug.Log(string.Format("테스트str {0}", str));
+                Debug.Log("명령어 인자 있음");
             }
+            else
+            {
+                Debug.Log("명령어 인자 없음");
+            }
+            //foreach (var str in filteredSubstrings)
+            //{
+            //    Debug.Log(string.Format("테스트str {0}", str));
+            //}
             int n;
             string[] numarr= Array.FindAll(strarr,s=>!string.IsNullOrEmpty(s)&&(int.TryParse(s,out n)));
             //Debug.Log(string.Format("숫자 길이{0}", numarr.Length));
@@ -116,10 +125,10 @@ public class InteractionEvent : MonoBehaviour
             switch (mat[0].ToString())
             {
                 case "size":
-                    { size(); }
+                    { size(filteredSubstrings); }
                     break;
                 case "speed":
-                    { speed(); }
+                    { speed(filteredSubstrings); }
                     break;
                 case "time":
                     { time(); }
@@ -134,20 +143,21 @@ public class InteractionEvent : MonoBehaviour
                     { play(); }
                     break;
                 case "anime":
-                    { anime(); }
+                    { anime(filteredSubstrings); }
                     break;
             
             }
         }
     }
 
-    public void size()//시작 끝 수치
+    public void size(string[] command_args)//시작 끝 수치
     {
-        Debug.Log("switch_size");
+        Debug.Log(string.Format("switch_size {0} {1} {2}", command_args[0], command_args[1], command_args[2]));
+        //Debug.Log("switch_size");
     }
-    public void speed()//시작 끝 수치
+    public void speed(string[] command_args)//시작 끝 수치
     {
-        Debug.Log("switch_speed");
+        Debug.Log(string.Format("switch_speed {0} {1} {2}", command_args[0], command_args[1], command_args[2]));
     }
     public void time()
     {
@@ -165,9 +175,9 @@ public class InteractionEvent : MonoBehaviour
     {
         Debug.Log("switch_play");
     }
-    public void anime()//시작 끝 종류
+    public void anime(string[] command_args)//시작 끝 종류
     {
-        Debug.Log("switch_anime");
+        Debug.Log(string.Format("switch_anime {0} {1} {2}", command_args[0], command_args[1], command_args[2]));
     }
 
     private void Start()
