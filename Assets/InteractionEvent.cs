@@ -39,7 +39,8 @@ public class InteractionEvent : MonoBehaviour
     private void Update()
     {
         //GetDialogue();
-        if (Input.GetKeyDown(KeyCode.F)&(num<dialogue.dialouses.Length))//line을 조절 해야함 대화가 끝나는 시점을 정하려면 line.y를 설정해야함
+        //화살표로 선택지 왔다 갔다 하면서 f로 선택
+        if ((Input.GetKeyDown(KeyCode.F) & (num < dialogue.dialouses.Length)))//line을 조절 해야함 대화가 끝나는 시점을 정하려면 line.y를 설정해야함
         {
 
             //Debug.Log(string.Format("{0}", dialogue.dialouses[num].context[0]));
@@ -70,6 +71,10 @@ public class InteractionEvent : MonoBehaviour
             contentNum = 0;
             num++;
         }
+        //if (dialogue.dialouses[num].context.Length > -1 & Input.GetKeyDown(KeyCode.RightArrow))
+        //{
+        //
+        //}
         if (num == dialogue.dialouses.Length)
         {
             Debug.Log("대화끝");
