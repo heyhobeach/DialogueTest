@@ -12,7 +12,8 @@ public class DialogueParser : MonoBehaviour
     string SPLIT_COMMAND_PASER = @"[""!,]";//명령어 분리 정규식
     string SPLIT_NUM = @"([^1-9]{1,})";//공백 분리 정규식
     string[] row;
-    string[] command;
+    //string[] command;
+    string[] testarr;
     //public int start = 0, end = 0;
     //테스트
     public Dialogue[] Parse(string _CSVFileName)
@@ -35,14 +36,17 @@ public class DialogueParser : MonoBehaviour
         for(int i=1+DatabaseManager.instance.lastIndex;i<data.Length-1; )//ID 1번 부터 위에는 다른거라서 필요없음
         {
             int command_num = 0;
-            List<string[]> commandList = new List<string[]>();  
+            List<string> commandList = new List<string>();
+            List<string> testarr = new List<string>();
             row = Regex.Split(data[i], SPLIT_RE);
             Dialogue dialogue = new Dialogue();//
             //dialogue.command = new string[10][];
             dialogue.name = row[2];
             dialogue.id = row[0];
-            command = Regex.Split(row[4], SPLIT_COMMAND_PASER);
-            command = spaceremove(command);
+            //command = Regex.Split(row[4], SPLIT_COMMAND_PASER);
+            //command = spaceremove(command);
+            
+
             
             //dialogue.command[command_num++] = command;
             bool isEnd = false;
@@ -51,7 +55,8 @@ public class DialogueParser : MonoBehaviour
             List<string> contextList = new List<string>();
             do//동일 id에서 대화 창 변경 한 경우 표시
             {
-                commandList.Add(command);
+                commandList.Add(row[4]);
+                testarr.Add(row[5]);//메모 넣는부분
                 //dialogue.command[command_num++] = command;
                 contextList.Add(row[3]);//content
                 if (row[3].ToString() == "")//대화가 끝난 경우 대화창 공백
@@ -71,13 +76,13 @@ public class DialogueParser : MonoBehaviour
 
                     //Debug.Log(string.Format("i�� {0} {1} {2}", i, row[1], row[3]));
                     
-                    foreach(var com in command)
-                    {
-                        Debug.Log(string.Format("���ɾ� {0}", com));
-                    }
+                    //foreach(var com in command)
+                    //{
+                    //    Debug.Log(string.Format("명령어 {0}", com));
+                    //}
                     row = Regex.Split(data[i], SPLIT_RE);//do while들어와서 csv 분리 못 한 경우 분리
-                    command = Regex.Split(row[4], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
-                    command = spaceremove(command);
+                    //command = Regex.Split(row[4], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+                    //command = spaceremove(command);
 
                 }
                 else
@@ -93,6 +98,7 @@ public class DialogueParser : MonoBehaviour
                 foreach (var com in coms) { }
             }
             dialogue.context = contextList.ToArray();
+            dialogue.test = testarr.ToArray();
 
             dialoguesList.Add(dialogue); //대화 내용 리스트에 삽입
             if (isEnd)
@@ -120,21 +126,7 @@ public class DialogueParser : MonoBehaviour
         return endIndex;
     }
 
-    private string[] spaceremove(string[] com)
-    {
-        List<string> temp = new List<string>();
-        int index = 0;
-        foreach(var j in com)
-        {
-            if (j.ToString() != "")
-            {
-                temp.Add(j);
-            }
-        }
 
-        return temp.ToArray();
-
-    }
 
 
 

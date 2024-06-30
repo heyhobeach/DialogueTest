@@ -12,7 +12,8 @@ public class Dialogue
     public string[] context;
     public string choice;
     public string id;
-    public string[][] command;
+    public string[] command;
+    public string []test;//나중에 지울것
 }
 [System.Serializable]
 public class DialogueEvent

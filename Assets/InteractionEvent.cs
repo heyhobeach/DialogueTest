@@ -18,6 +18,10 @@ public class InteractionEvent : MonoBehaviour
 
     int indexNum = 0;
 
+    string[] command;
+
+    string SPLIT_COMMAND_PASER = @"[""!,]";//명령어 분리 정규식
+
     public Dialogue[] GetDialogue()
     {
 
@@ -56,18 +60,36 @@ public class InteractionEvent : MonoBehaviour
             //    }
             //}
 
-            foreach (var coms in dialogue.dialouses[num].command)
-            {
-                CallFunction(coms);
-            }
+            //foreach (var coms in dialogue.dialouses[num].command)
+            //{
+            //    CallFunction(coms);
+            //}
 
             if (dialogue.dialouses[num].context.Length-1 > contentNum)
             {
                 gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));
+                Debug.Log(string.Format("메모장 테스트용{0}", dialogue.dialouses[num].test[contentNum]));
+                Debug.Log(string.Format("명령어 테스트용{0}", dialogue.dialouses[num].command[contentNum]));
+                command = Regex.Split(dialogue.dialouses[num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+                command = spaceremove(command);
+                CallFunction(command);
+                foreach(var _com in command)
+                {
+                    Debug.Log(string.Format("{1} 명령어 {0}", _com,num));
+                }
                 contentNum++;
                 return;
             }
             gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));
+            Debug.Log(string.Format("메모장 테스트용{0}", dialogue.dialouses[num].test[contentNum]));
+            Debug.Log(string.Format("명령어 테스트용{0}", dialogue.dialouses[num].command[contentNum]));
+            command = Regex.Split(dialogue.dialouses[num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+            command = spaceremove(command);
+            CallFunction(command);
+            foreach (var _com in command)
+            {
+                Debug.Log(string.Format("{1} 명령어 {0}", _com, num));
+            }
             contentNum = 0;
             num++;
         }
@@ -154,6 +176,22 @@ public class InteractionEvent : MonoBehaviour
             }
         }
     }
+    private string[] spaceremove(string[] com)
+    {
+        List<string> temp = new List<string>();
+        int index = 0;
+        foreach (var j in com)
+        {
+            if (j.ToString() != "")
+            {
+                temp.Add(j);
+            }
+        }
+
+        return temp.ToArray();
+
+    }
+
 
     public void size(string[] command_args)//시작 끝 수치
     {
