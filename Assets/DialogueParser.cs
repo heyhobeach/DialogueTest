@@ -62,13 +62,13 @@ public class DialogueParser : MonoBehaviour
                 if (row[3].ToString() == "")//대화가 끝난 경우 대화창 공백
                 {
                     isEnd = true;
-                    Debug.Log(string.Format("content =>null"));//대화 끝난거 확인용 debug
+                    //Debug.Log(string.Format("content =>null"));//대화 끝난거 확인용 debug
                     contextList.RemoveAt(contextList.Count-1);//마지막에 삽인 되어있는 공백 칸 제거용
 
                 }
                 else
                 {
-                    Debug.Log(string.Format("content =>{0}", row[3]));
+                    //Debug.Log(string.Format("content =>{0}", row[3]));
                 }
 
                 if (++i < data.Length-1)

@@ -5,14 +5,14 @@ using UnityEngine;
 public class DatabaseManager : MonoBehaviour
 {
     // Start is called before the first frame update
-    public static DatabaseManager instance;//³ªÁß¿¡ ½Ì±ÛÅÏ µÉµí
+    public static DatabaseManager instance;//ë‚˜ì¤‘ì— ì‹±ê¸€í„´ ë ë“¯
 
-    [SerializeField] string csv_FileName;
+    public string csv_FileName;
 
     Dictionary<int, Dialogue> dialogueDic =new Dictionary<int, Dialogue>();
     DialogueParser theParser;
 
-    public int endLine = 0, startLine = 0;//start = 0 end ´ëÈ­ ³¡ ½ÃÁ¡ => start = end , end = ´ëÈ­ ³¡ ¹İº¹(Â¥¾ßÇÔ) µñ¼Å³Ê¸® Á¢±Ù¿ë ¼ö
+    public int endLine = 0, startLine = 0;//start = 0 end ëŒ€í™” ë ì‹œì  => start = end , end = ëŒ€í™” ë ë°˜ë³µ(ì§œì•¼í•¨) ë”•ì…”ë„ˆë¦¬ ì ‘ê·¼ìš© ìˆ˜
     public int lastIndex = 0;
 
     public List<int> indexList;
@@ -26,7 +26,7 @@ public class DatabaseManager : MonoBehaviour
         {
             instance = this;
             theParser = GetComponent<DialogueParser>();
-            Dialogue[] dialogues =theParser.Parse(csv_FileName);//¿©±â¼­ Áö±İ ´ëÈ­ ¸ğµç ³»¿ëÀ» ´Ù ÆÄ½Ì ÇÑ »óÅÂ
+            Dialogue[] dialogues =theParser.Parse(csv_FileName);//ì—¬ê¸°ì„œ ì§€ê¸ˆ ëŒ€í™” ëª¨ë“  ë‚´ìš©ì„ ë‹¤ íŒŒì‹± í•œ ìƒíƒœ
             //startLine=
             for(int i =0;i<dialogues.Length;i++)
             {
@@ -38,22 +38,22 @@ public class DatabaseManager : MonoBehaviour
 
     public Dialogue[] GetDialogues(int startNum ,int endNum)
     {
-        //Debug.Log("ÆÄ¼­");
+        //Debug.Log("íŒŒì„œ");
         List<Dialogue> dialoguesList = new List<Dialogue>();
 
-        for(int i = 0; i <= endNum - startNum; i++)//1°ú 3 »çÀÌ ³»¿ëÀ» °¡Á® ¿À·Á°í ±×·¯´Â°Í
+        for(int i = 0; i <= endNum - startNum; i++)//1ê³¼ 3 ì‚¬ì´ ë‚´ìš©ì„ ê°€ì ¸ ì˜¤ë ¤ê³  ê·¸ëŸ¬ëŠ”ê²ƒ
         {
             
             if (startNum + i < 1)
             {
-                //Debug.Log("³Ñ±è");
-                //Debug.Log(string.Format("³Ñ±è {0}||{1}||{2}", startNum, endNum, i));
+                //Debug.Log("ë„˜ê¹€");
+                //Debug.Log(string.Format("ë„˜ê¹€ {0}||{1}||{2}", startNum, endNum, i));
                 continue;
             }
             else
             {
-                //Debug.Log("else¹®");
-            }//Debug.Log("¸®½ºÆ® »ğÀÔ");
+                //Debug.Log("elseë¬¸");
+            }//Debug.Log("ë¦¬ìŠ¤íŠ¸ ì‚½ì…");
             dialoguesList.Add(dialogueDic[startNum + i]);
         }
 
