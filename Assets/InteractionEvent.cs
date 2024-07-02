@@ -17,8 +17,12 @@ public class InteractionEvent : MonoBehaviour
     int contentNum = 0;
 
     int indexNum = 0;
+    int contentlength = 0;
 
     string[] command = new string[1];
+    bool start = false;
+
+    IEnumerator time_check_cor;
 
     string SPLIT_COMMAND_PASER = @"[""!,]";//명령어 분리 정규식
 
@@ -42,12 +46,27 @@ public class InteractionEvent : MonoBehaviour
         //}
         return dialogue.dialouses;
     }
+    private void Start()
+    {
+
+        GetDialogue();
+        command[0] = "";
+        foreach (var i in DatabaseManager.instance.indexList)
+        {
+            Debug.Log(string.Format("list {0}", i));
+        }
+        //time_check_cor = ChocieTimer(5, Timeover);
+        //time_check_cor = ChocieTimer(5,start);
+
+
+
+    }
 
     private void Update()
     {
         //GetDialogue();
         //화살표로 선택지 왔다 갔다 하면서 f로 선택
-        Debug.Log(string.Format("num =>{0}", num));
+        //Debug.Log(string.Format("num =>{0}", num));
         //if(Input.GetKeyDown(KeyCode.RightArrow))
         //{
         //    Debug.Log(string.Format("{0}, {1}",num,contentNum));
@@ -77,8 +96,9 @@ public class InteractionEvent : MonoBehaviour
             //}
             if (Input.GetKeyDown(KeyCode.F))
             {
-                if (num== dialogue.dialouses.Length)
+                if (num == dialogue.dialouses.Length)
                 {
+                    Debug.Log("여기서 커맨드 발동");
                     command = spaceremove(command);
                     CallFunction(command);
                     num++;
@@ -87,6 +107,7 @@ public class InteractionEvent : MonoBehaviour
                 }
                 command = spaceremove(command);
                 CallFunction(command);
+                contentlength = dialogue.dialouses[num].context.Length;
 
                 gameObject.GetComponentInParent<UIManager>().Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
                 Debug.Log(dialogue.dialouses[num].context.Length);
@@ -116,14 +137,23 @@ public class InteractionEvent : MonoBehaviour
             //{
             //    CallFunction(coms);
             //}
-            if (num > 0)
+            if (contentlength > 1)
             {
+                Debug.Log("num이 더 큼");
+                //StartCoroutine(time_check_cor);
+                if (start == false)
+                {
+                    start = true;
+                    //time_check_cor = ChocieTimer(5, start);
+                    StartCoroutine(ChocieTimer(5, start,Timeover));
+                }
+                //StartCoroutine(time_check_cor);
                 if (Input.GetKeyDown(KeyCode.RightArrow))
                 {
                     //contentNum++;
                     //첫 부분에 관한 예외 처리 필요
                     //임시방편,//시작시 띄우고 그리고 값을 1부터 시작한다면?
-                    if (dialogue.dialouses[num - 1].context.Length > (contentNum + 1))
+                    if (contentlength > (contentNum + 1))
                     {
                         contentNum++;
                         Debug.Log(string.Format("선택지 확인 {0}, {1}", num - 1, contentNum));
@@ -143,7 +173,7 @@ public class InteractionEvent : MonoBehaviour
 
                 }
 
-                if (Input.GetKeyDown(KeyCode.LeftArrow)&(contentNum>0))
+                if (Input.GetKeyDown(KeyCode.LeftArrow) & (contentNum > 0))
                 {
                     contentNum--;
                     Debug.Log(string.Format("선택지 확인 {0}, {1}", num - 1, contentNum));
@@ -153,6 +183,11 @@ public class InteractionEvent : MonoBehaviour
                     command = Regex.Split(dialogue.dialouses[num - 1].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
                     //내용
                 }
+
+            }
+            else
+            {
+                start = false;
             }
 
 
@@ -265,7 +300,7 @@ public class InteractionEvent : MonoBehaviour
             command = new string[1] { "" };
         }
     }
-    private string[] spaceremove(string[] com)
+    private string[] spaceremove(string[] com)//공백 제거 함수
     {
         List<string> temp = new List<string>();
         int index = 0;
@@ -312,15 +347,38 @@ public class InteractionEvent : MonoBehaviour
         Debug.Log(string.Format("switch_anime {0} {1} {2}", command_args[0], command_args[1], command_args[2]));
     }
 
-    private void Start()
-    {
 
-        GetDialogue();
-        command[0] = "";
-        foreach (var i in DatabaseManager.instance.indexList)
+
+    public void Timeover()
+    {
+        Debug.Log("time over");
+        if (contentlength > 1)
         {
-            Debug.Log(string.Format("list {0}", i));
+            Debug.Log(string.Format("{0} num {1} contentNum", num - 1, contentNum));
+            command = Regex.Split(dialogue.dialouses[num - 1].command[0], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+            command = spaceremove(command);
+            CallFunction(command);
+            num++;
+            contentNum = 0;
+        }
+    }
+
+    //IEnumerator ChocieTimer(float seconds, Action act)
+    //{
+    //    Debug.Log("코루틴 초" + seconds);
+    //    yield return new WaitForSeconds(seconds);
+    //    Debug.Log("time 코루틴 시작");
+    //    act();
+    //}
+    IEnumerator ChocieTimer(float seconds,bool start,Action act)
+    {
+        if (start)
+        {
+            Debug.Log("코루틴 초" + seconds);
+            yield return new WaitForSeconds(seconds);
+            Debug.Log("time 코루틴 시작");
         }
 
+        act();
     }
 }
