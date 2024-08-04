@@ -23,6 +23,8 @@ public class UIManager : MonoBehaviour
     /// 선택지 색상
     /// </summary>
     /// 
+
+    int select_count;
     string test_str;
     public string color = "black";
 
@@ -83,6 +85,25 @@ public class UIManager : MonoBehaviour
         color_str = string.Format("");
         //content.text.Replace(test[countNum], color_str);
     }
+    public void ChangeText(int countNum)
+    {
+        TMP_Text TMP;
+        for (int i =0;i< select_count; i++)
+        {
+            TMP = content.transform.parent.GetChild(i).GetComponent<TMP_Text>();
+            if (i== countNum)
+            {
+                TMP.color = Color.black;
+            }
+            else
+            {
+                TMP.color = Color.gray;
+            }
+
+        }  
+        //TMP_Text TMP = content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>();
+        //TMP.color = Color.black;
+    }
 
     public void UpArrow(ref int countNum)
     {
@@ -90,22 +111,26 @@ public class UIManager : MonoBehaviour
         Debug.Log("UpArrow countNum" + countNum);
         countNum--;
         content.color = Color.gray;
-        content.text = test_str;
+        //content.text = test_str;
+        Debug.Log(content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>().text);
+        ChangeText(countNum);
+        //TMP_Text TMP = content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>();
+        //TMP.color = Color.black;
         string color_str;
         color_str = string.Format("{0}{1}{2}", "<color=", color, ">");
         string change_str = color_str + test[countNum] + "</color>";
         string teststr = "";
-        for (int i = 0; i < test.Length; i++)
-        {
-            if (i == countNum)
-            {
-                teststr += change_str + "<br>";
-                continue;
-            }
-            teststr += test[i] + "<br>";
-
-        }
-        content.text = teststr;
+        //for (int i = 0; i < test.Length; i++)
+        //{
+        //    if (i == countNum)
+        //    {
+        //        teststr += change_str + "<br>";
+        //        continue;
+        //    }
+        //    teststr += test[i] + "<br>";
+        //
+        //}
+        //content.text = teststr;
         //content.text=content.text.Replace(test[countNum], change_str);
         Debug.Log(change_str);
         
@@ -116,22 +141,27 @@ public class UIManager : MonoBehaviour
         Debug.Log("UpArrow countNum" + countNum);
         countNum++;
         content.color = Color.gray;
-        content.text = test_str;
+        //content.text = test_str;
+
+        Debug.Log(content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>());
+        ChangeText(countNum);
+        //TMP_Text TMP = content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>();
+        //TMP.color = Color.black;
         string color_str ;
         color_str = string.Format("{0}{1}{2}", "<color=", color, ">");
         string change_str = color_str + test[countNum] + "</color>";
         string teststr = "";
-        for (int i = 0; i < test.Length; i++)
-        {
-            if (i == countNum)
-            {
-                teststr += change_str+"<br>";
-                continue;
-            }
-            teststr += test[i]+"<br>";
-
-        }
-        content.text = teststr;
+        //for (int i = 0; i < test.Length; i++)
+        //{
+        //    if (i == countNum)
+        //    {
+        //        teststr += change_str+"<br>";
+        //        continue;
+        //    }
+        //    teststr += test[i]+"<br>";
+        //
+        //}
+        //content.text = teststr;
         //content.text=content.text.Replace(test[countNum], change_str);
         Debug.Log(change_str);
         
@@ -157,30 +187,37 @@ public class UIManager : MonoBehaviour
 
     IEnumerator TextSliding(string[] strArr,int contentLengh)//배열로 받을 예정
     {
-        for(int i = 1; i < contentLengh; i++)
+        select_count = strArr.Length;
+        //strArr[0] = string.Format("{0}{1}{2}{3}{4}", "<color=", color, ">", strArr[0], "</color>");
+        Debug.Log("strArr"+strArr[0]);
+        content.text = strArr[0];
+        content.color = Color.black;
+        for (int i = 1; i < contentLengh; i++)//오브젝트 생성과 텍스트 배치
         {
             Debug.Log(content.transform.parent.name);
             TMP_Text select = Instantiate(content,this.transform.position,Quaternion.identity);
             select.transform.parent = content.transform.parent;
+            select.text = strArr[i];
+            select.color = Color.gray;
         }
         is_select_show = true;
-        content.text = null;
-        content.color = Color.gray;
+        //content.text = null;
+        //content.color = Color.gray;
         index = -1;
-        test_str = string.Join("", strArr);
+        //test_str = string.Join("", strArr);
         test = (string[])strArr.Clone();
-        strArr[0]= string.Format("{0}{1}{2}{3}{4}", "<color=", color, ">", strArr[0],"</color>");
+        
         
         foreach (var str in strArr)//문자열을 여기서 수정해야할까? 싶은 생각
         {
-            //is_select_show = true;
+            is_select_show = true;
             if (str == "")
             {
                 yield return null;
             }
-            content.text += str;
-            content.text += "<br>";
-            index++;
+            //content.text += str;
+            //content.text += "<br>";
+            //index++;
             
 
             yield return new WaitForSeconds(1);
@@ -195,10 +232,10 @@ public class UIManager : MonoBehaviour
         {
             //indexOf
             //test_str += str;
-            arr[index]=content.text.IndexOf(str, StringComparison.OrdinalIgnoreCase);
+            //arr[index]=content.text.IndexOf(str, StringComparison.OrdinalIgnoreCase);
             //Debug.Log(string.Format("정규식 테스트{0}, {1}", str, arr[index]));
-            Debug.Log("test안에" + str);
-            index++;
+            //Debug.Log("test안에" + str);
+            //index++;
         }
         Debug.Log(test_str);
         //

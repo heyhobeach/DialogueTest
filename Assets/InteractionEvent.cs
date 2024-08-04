@@ -75,12 +75,14 @@ public class InteractionEvent : MonoBehaviour
 
                 if (num >= dialogue.dialouses.Length)//or추가
                 {
-                    Debug.Log("여기서 커맨드 발동");
-
-                    num++;
-                    contentNum = 0;
+                    Debug.Log("여기서 커맨드 발동"+ contentNum);
                     command = spaceremove(command);
                     CallFunction(command);
+                    num++;
+                    contentNum = 0;
+                    //Debug.Log(contentNum);
+                    //command = spaceremove(command);
+                    //CallFunction(command);
                     return;
                 }
                 command = spaceremove(command);
@@ -196,8 +198,13 @@ public class InteractionEvent : MonoBehaviour
                         //gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num - 1].context[contentNum]));
                         //Debug.Log(string.Format("메모장 테스트용{0}", dialogue.dialouses[num].test[contentNum]));
                         //Debug.Log(string.Format("명령어 테스트용{0}", dialogue.dialouses[num].command[contentNum]));
-                        command = Regex.Split(dialogue.dialouses[num - 1].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+
                         gameObject.GetComponentInParent<UIManager>().DownArrow(ref contentNum);
+                        command = Regex.Split(dialogue.dialouses[num - 1].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+                        foreach (var com in command)
+                        {
+                            Debug.Log("명령어" + com);
+                        }
                         //command = spaceremove(command);
                         //CallFunction(command);
                         //foreach (var _com in command)
@@ -217,8 +224,13 @@ public class InteractionEvent : MonoBehaviour
                     //gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num - 1].context[contentNum]));
                     //Debug.Log(string.Format("메모장 테스트용{0}", dialogue.dialouses[num].test[contentNum]));
                     //Debug.Log(string.Format("명령어 테스트용{0}", dialogue.dialouses[num].command[contentNum]));
-                    command = Regex.Split(dialogue.dialouses[num - 1].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+                    Debug.Log("명령어" + command);
                     gameObject.GetComponentInParent<UIManager>().UpArrow(ref contentNum);
+                    command = Regex.Split(dialogue.dialouses[num - 1].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+                    foreach (var com in command)
+                    {
+                        Debug.Log("명령어" + com);
+                    }
                     //내용
                 }
 
