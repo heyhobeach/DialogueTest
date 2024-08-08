@@ -20,12 +20,6 @@ public class UIManager : MonoBehaviour
 
     int select_count;
     //string test_str;
-
-    /// <summary>
-    /// 현재 나오고 있는 선택지 번호
-    /// </summary>
-    int index = 0;
-
     /// <summary>
     /// 텍스트 오브젝트 이동 애니메이션 시간
     /// </summary>
@@ -69,8 +63,6 @@ public class UIManager : MonoBehaviour
         CreatSelect(_contentArr);
         co = TextSliding(_contentArr);
         StartCoroutine(co);
-
-        //content.text = _contentArr;
     }
     public void ChangeText(int countNum)//화살표 맞게 글자 색 변경하는 부분
     {
@@ -163,7 +155,6 @@ public class UIManager : MonoBehaviour
     IEnumerator TextSliding(string[] strArr)//배열로 받을 예정
     {
         is_select_show = true;
-        index = -1;
         float delta = 0;
         GameObject fixedVertical = content.transform.parent.gameObject;
         fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = false;
@@ -192,20 +183,6 @@ public class UIManager : MonoBehaviour
             //Debug.Log(ContentArr[0].text + "위치 " + current);
             yield return null;
         }
-
-
-
-        //yield return null;    
-        //foreach (TMP_Text str in ContentArr)//문자열을 여기서 수정해야할까? 싶은 생각
-        //{
-        //    Debug.Log("foreach 테스트" + str.text);
-        //
-        //}
-
-        //Debug.Log("test 길이 " + test.Length);
-        index = 0;
-        //Debug.Log(test_str);
-        //
         fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = true;
         is_select_show = false;
 
