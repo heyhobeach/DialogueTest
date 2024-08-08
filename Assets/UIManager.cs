@@ -8,30 +8,29 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 using static System.Net.WebRequestMethods;
+using static UnityEditor.Timeline.TimelinePlaybackControls;
 
 public class UIManager : MonoBehaviour
 {
     /// <summary>
-    /// 텍스트 번호 담기 위함
+    /// 선택지 생성한 오브젝트 담는 배열
     /// </summary>
-    int[] arr;
-    /// <summary>
-    /// 선택지 문자열
-    /// </summary>
-    string[] test;
-    /// <summary>
-    /// 선택지 색상
-    /// </summary>
-    /// 
+    TMP_Text[] ContentArr = null;
+
 
     int select_count;
-    string test_str;
-    public string color = "black";
+    //string test_str;
 
     /// <summary>
     /// 현재 나오고 있는 선택지 번호
     /// </summary>
     int index = 0;
+
+    /// <summary>
+    /// 텍스트 오브젝트 이동 애니메이션 시간
+    /// </summary>
+    [SerializeField]
+    private float duration = 3f;
     //public Text
     public TMP_Text namemesh;
     public TMP_Text content;
@@ -48,14 +47,10 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         co = Typing("");
-        //namemesh = GetComponent<TextMeshPro>();
+        ContentArr = new TMP_Text[1];
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        //namemesh.text = "조현섭";
-    }
 
     public void Setname(string name)
     {
@@ -67,27 +62,20 @@ public class UIManager : MonoBehaviour
         StopCoroutine(co);
         co = Typing(_content);
         StartCoroutine(co);
-        //content.text = _content;
     }
     public void SetContent(string[] _contentArr)//배열로 받을 예정
     {
         StopCoroutine(co);
-        //co = Typing(_content);
+        CreatSelect(_contentArr);
         co = TextSliding(_contentArr);
         StartCoroutine(co);
 
         //content.text = _contentArr;
     }
-
-    public void ChoiceColorChange(int countNum)
-    {
-        string color_str = test[countNum];
-        color_str = string.Format("");
-        //content.text.Replace(test[countNum], color_str);
-    }
-    public void ChangeText(int countNum)
+    public void ChangeText(int countNum)//화살표 맞게 글자 색 변경하는 부분
     {
         TMP_Text TMP;
+        content.color = Color.gray;
         for (int i = 0; i < select_count; i++)
         {
             TMP = content.transform.parent.GetChild(i).GetComponent<TMP_Text>();
@@ -101,74 +89,32 @@ public class UIManager : MonoBehaviour
             }
 
         }
-        //TMP_Text TMP = content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>();
-        //TMP.color = Color.black;
     }
 
     public void UpArrow(ref int countNum)
     {
         if (is_select_show) return;
-        Debug.Log("UpArrow countNum" + countNum);
         countNum--;
-        content.color = Color.gray;
-        //content.text = test_str;
-        Debug.Log(content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>().text);
         ChangeText(countNum);
-        //TMP_Text TMP = content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>();
-        //TMP.color = Color.black;
-        string color_str;
-        color_str = string.Format("{0}{1}{2}", "<color=", color, ">");
-        string change_str = color_str + test[countNum] + "</color>";
-        string teststr = "";
-        //for (int i = 0; i < test.Length; i++)
-        //{
-        //    if (i == countNum)
-        //    {
-        //        teststr += change_str + "<br>";
-        //        continue;
-        //    }
-        //    teststr += test[i] + "<br>";
-        //
-        //}
-        //content.text = teststr;
-        //content.text=content.text.Replace(test[countNum], change_str);
-        Debug.Log(change_str);
 
     }
     public void DownArrow(ref int countNum)
     {
         if (is_select_show) return;
-        Debug.Log("UpArrow countNum" + countNum);
         countNum++;
-        content.color = Color.gray;
-        //content.text = test_str;
-
-        Debug.Log(content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>());
         ChangeText(countNum);
-        //TMP_Text TMP = content.transform.parent.GetChild(countNum).GetComponent<TMP_Text>();
-        //TMP.color = Color.black;
-        string color_str;
-        color_str = string.Format("{0}{1}{2}", "<color=", color, ">");
-        string change_str = color_str + test[countNum] + "</color>";
-        string teststr = "";
-        //for (int i = 0; i < test.Length; i++)
-        //{
-        //    if (i == countNum)
-        //    {
-        //        teststr += change_str+"<br>";
-        //        continue;
-        //    }
-        //    teststr += test[i]+"<br>";
-        //
-        //}
-        //content.text = teststr;
-        //content.text=content.text.Replace(test[countNum], change_str);
-        Debug.Log(change_str);
-
     }
 
     IEnumerator Typing(string str)
     {
+        //첫 설정때 contentArr 설정 필요 지금 contentArr이 아무것도 없다고 되어있음 따라서 contentArr[0]에는 content가 들어가야함
+        Debug.Log(str);
+        Debug.Log(ContentArr.Length);
+        if (ContentArr.Length>1)//사유 오브젝트 없음
+        {
+          DestroySelectBox();
+        
+        }
         content.text = null;
         if (content.color != Color.black)
         {
@@ -183,69 +129,86 @@ public class UIManager : MonoBehaviour
             content.text += str[i];
             yield return new WaitForSeconds(typing_speed);
         }
+        Debug.Log("타이핑 종료");
+    }
+    void DestroySelectBox()
+    {
+        Debug.Log("파괴");
+        for(int i = 1; i < ContentArr.Length; i++)
+        {
+            Destroy(ContentArr[i].transform.gameObject);
+        }
+        ContentArr = new TMP_Text[1];
+        //ContentArr = null;
     }
 
-    IEnumerator TextSliding(string[] strArr)//배열로 받을 예정
+    void CreatSelect(string[] strArr)
     {
         select_count = strArr.Length;
-        //strArr[0] = string.Format("{0}{1}{2}{3}{4}", "<color=", color, ">", strArr[0], "</color>");
-        Debug.Log("strArr" + strArr[0]);
         content.text = strArr[0];
         content.color = Color.black;
-        for (int i = 1; i < strArr.Length; i++)//오브젝트 생성과 텍스트 배치
+        ContentArr = new TMP_Text[strArr.Length];
+        ContentArr[0] = content;
+        for (int i = 1; i < select_count; i++)//오브젝트 생성과 텍스트 배치
         {
-            Debug.Log(content.transform.parent.name);
-            TMP_Text select = Instantiate(content, this.transform.position, Quaternion.identity);
+            //Debug.Log(content.transform.parent.name);
+            TMP_Text select = Instantiate(content, this.transform.position-new Vector3(this.transform.position.x-100,this.transform.position.y,this.transform.position.z), Quaternion.identity);
+            ContentArr[i] = select;
             select.transform.parent = content.transform.parent;
             select.text = strArr[i];
             select.color = Color.gray;
         }
+    }
+
+    IEnumerator TextSliding(string[] strArr)//배열로 받을 예정
+    {
         is_select_show = true;
-        //content.text = null;
-        //content.color = Color.gray;
         index = -1;
-        //test_str = string.Join("", strArr);
-        test = (string[])strArr.Clone();
+        float delta = 0;
+        GameObject fixedVertical = content.transform.parent.gameObject;
+        fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = false;
+        Debug.Log("여기" + ContentArr[0]);
+        Debug.Log("여기" + ContentArr[1]);
 
-
-        foreach (var str in strArr)//문자열을 여기서 수정해야할까? 싶은 생각
+        Debug.Log("여기" + ContentArr[2]);
+        float endPos = ContentArr[0].transform.position.x;
+        int count = 0;
+        float size = content.rectTransform.rect.size.y;
+        Debug.Log("size" + size);
+        while (delta <= duration&(count<3))
         {
-            is_select_show = true;
-            if (str == "")
+            float t = delta / duration;
+            t = 1 - Mathf.Pow(1 - t, 3);
+            float current = Mathf.Lerp(this.transform.position.x - 100, endPos, t);//시작위치,도착위치,t
+            ContentArr[count].transform.position = new Vector3(current, ContentArr[0].transform.position.y-(size*count), ContentArr[count].transform.position.z);
+            delta += Time.deltaTime;
+            if(delta> duration)
             {
-                yield return null;
+                Debug.Log("증가");
+                count++;
+                delta = 0;
+                continue;
             }
-            //content.text += str;
-            //content.text += "<br>";
-            //index++;
-
-
-            yield return new WaitForSeconds(1);
-
-            Debug.Log("index =" + index);
+            //Debug.Log(ContentArr[0].text + "위치 " + current);
+            yield return null;
         }
 
-        Debug.Log("test 길이 " + test.Length);
-        arr = new int[test.Length];//전역으로 빠져야함, 해당 위치에 >삽입
-        index = 0;
-        foreach (var str in test)
-        {
-            //indexOf
-            //test_str += str;
-            //arr[index]=content.text.IndexOf(str, StringComparison.OrdinalIgnoreCase);
-            //Debug.Log(string.Format("정규식 테스트{0}, {1}", str, arr[index]));
-            //Debug.Log("test안에" + str);
-            //index++;
-        }
-        Debug.Log(test_str);
+
+
+        //yield return null;    
+        //foreach (TMP_Text str in ContentArr)//문자열을 여기서 수정해야할까? 싶은 생각
+        //{
+        //    Debug.Log("foreach 테스트" + str.text);
         //
+        //}
+
+        //Debug.Log("test 길이 " + test.Length);
+        index = 0;
+        //Debug.Log(test_str);
+        //
+        fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = true;
         is_select_show = false;
 
 
-    }
-
-    public void Test()
-    {
-        Debug.Log("call");
     }
 }
