@@ -71,26 +71,29 @@ public class InteractionEvent : MonoBehaviour
             command = spaceremove(command);
             CallFunction(command);
         }
+        contentNum = 0;
     }
 
     private void HandleDialogue()
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.F))//f누를때 문제 생기는듯?
         {
             HandleCommand();
-            
             if (num < dialogue.dialouses.Length)
             {
+                Debug.Log("id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
                 gameObject.GetComponentInParent<UIManager>().Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
                                                                                                    //Debug.Log(dialogue.dialouses[num].context.Length);
                 Debug.Log(string.Format("num => {0} contentnum ={1}", num, contentNum));
                 contentlength = dialogue.dialouses[num].context.Length;
-                Debug.Log(contentlength);
+                Debug.Log("contentLength"+contentlength);//지금 자꾸 길이가 0이라고 나옴
                 if (contentlength == 1)
                 {
-                    gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));
 
                     Debug.Log(string.Format("num => {0} 대화 길이 =>{1}", num, dialogue.dialouses.Length));
+                    Debug.Log("에러나는 부분"+dialogue.dialouses[num].context[contentNum]);//여기가 문제
+                    gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));  
+
 
                 }
                 else
@@ -100,10 +103,16 @@ public class InteractionEvent : MonoBehaviour
                     //gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", ""));
                     for (int index = 0; index < contentlength; index++)//한번만 호출 되어야함
                     {
+                        Debug.Log(string.Format("index =>{0} : content=>{1}",index, dialogue.dialouses[num].context[index]));
                         textSum[index] = dialogue.dialouses[num].context[index];
 
 
                     }
+                    foreach(string text in textSum)
+                    {
+                        Debug.Log("testSum content is" + text);
+                    }
+
                     gameObject.GetComponentInParent<UIManager>().SetContent(textSum);
                     if (start == false)
                     {
@@ -121,12 +130,12 @@ public class InteractionEvent : MonoBehaviour
         if (contentlength > 1)//선택지 부분
         {
             Debug.Log("선택지 부분");
-            string textSum = "";
-            if (start == false)
-            {
-                start = true;
-                StartCoroutine(ChocieTimer(5, start, Timeover));
-            }
+            //string textSum = "";
+            //if (start == false)//이게 사용되는 부분인지 모르겠넹,처음 부터 선택지일경우?
+            //{
+            //    start = true;
+            //    StartCoroutine(ChocieTimer(5, start, Timeover));
+            //}
             if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 //countnum은 downArrow가 실행 되면 값이 변하게 되어있음

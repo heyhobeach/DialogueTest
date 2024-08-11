@@ -137,16 +137,20 @@ public class UIManager : MonoBehaviour
     void CreatSelect(string[] strArr)
     {
         select_count = strArr.Length;
+        Debug.Log("strArr length " + strArr.Length);    
+        //Debug.Log("strArr[0]" + strArr[0]);
+        //for(int i=0;i<strArr.Length;i++)
         content.text = strArr[0];
         content.color = Color.black;
         ContentArr = new TMP_Text[strArr.Length];
         ContentArr[0] = content;
         for (int i = 1; i < select_count; i++)//오브젝트 생성과 텍스트 배치
         {
-            //Debug.Log(content.transform.parent.name);
+            Debug.Log(content.transform.parent.name);
             TMP_Text select = Instantiate(content, this.transform.position-new Vector3(this.transform.position.x-100,this.transform.position.y,this.transform.position.z), Quaternion.identity);
             ContentArr[i] = select;
-            select.transform.parent = content.transform.parent;
+            select.transform.SetParent(content.transform.parent);
+            //      select.transform.parent = content.transform.parent;
             select.text = strArr[i];
             select.color = Color.gray;
         }
