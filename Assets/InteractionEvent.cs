@@ -81,19 +81,15 @@ public class InteractionEvent : MonoBehaviour
             HandleCommand();
             if (num < dialogue.dialouses.Length)
             {
-                Debug.Log("id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
+                //Debug.Log("id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
                 gameObject.GetComponentInParent<UIManager>().Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
                                                                                                    //Debug.Log(dialogue.dialouses[num].context.Length);
-                Debug.Log(string.Format("num => {0} contentnum ={1}", num, contentNum));
+                //Debug.Log(string.Format("num => {0} contentnum ={1}", num, contentNum));
                 contentlength = dialogue.dialouses[num].context.Length;
-                Debug.Log("contentLength"+contentlength);//지금 자꾸 길이가 0이라고 나옴
+                //Debug.Log("contentLength"+contentlength);//지금 자꾸 길이가 0이라고 나옴
                 if (contentlength == 1)
                 {
-
-                    Debug.Log(string.Format("num => {0} 대화 길이 =>{1}", num, dialogue.dialouses.Length));
-                    Debug.Log("에러나는 부분"+dialogue.dialouses[num].context[contentNum]);//여기가 문제
                     gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));  
-
 
                 }
                 else
@@ -103,16 +99,11 @@ public class InteractionEvent : MonoBehaviour
                     //gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", ""));
                     for (int index = 0; index < contentlength; index++)//한번만 호출 되어야함
                     {
-                        Debug.Log(string.Format("index =>{0} : content=>{1}",index, dialogue.dialouses[num].context[index]));
+                        //Debug.Log(string.Format("index =>{0} : content=>{1}",index, dialogue.dialouses[num].context[index]));
                         textSum[index] = dialogue.dialouses[num].context[index];
 
 
                     }
-                    foreach(string text in textSum)
-                    {
-                        Debug.Log("testSum content is" + text);
-                    }
-
                     gameObject.GetComponentInParent<UIManager>().SetContent(textSum);
                     if (start == false)
                     {
@@ -131,7 +122,7 @@ public class InteractionEvent : MonoBehaviour
         {
             Debug.Log("선택지 부분");
             //string textSum = "";
-            //if (start == false)//이게 사용되는 부분인지 모르겠넹,처음 부터 선택지일경우?
+            //if (start == false)//이게 사용되는 부분인지 모르겠넹,처음 부터 선택지일경우?//일단 주석 처리 했는데 만나자 마자 선택지가 발생하는 경우? 그때 아마 사용 될것 같음 지금은 아마 사용 안 될듯
             //{
             //    start = true;
             //    StartCoroutine(ChocieTimer(5, start, Timeover));
@@ -150,10 +141,9 @@ public class InteractionEvent : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.UpArrow) & (contentNum > 0))
             {
-                Debug.Log(string.Format("선택지 확인 {0}, {1}", num - 1, contentNum));
-                Debug.Log("명령어" + command);
                 gameObject.GetComponentInParent<UIManager>().UpArrow(ref contentNum);
                 command = Regex.Split(dialogue.dialouses[num - 1].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+                return;
             }
 
         }
