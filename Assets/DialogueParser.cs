@@ -24,7 +24,8 @@ public class DialogueParser : MonoBehaviour
 
         if(csvData == null)
         {
-            Debug.Log("파일 못 불러옴");
+            Debug.Log(_CSVFileName+"파일 못 불러옴");
+            return null;
         }
         else
         {
