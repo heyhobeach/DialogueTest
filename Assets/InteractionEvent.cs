@@ -28,6 +28,9 @@ public class InteractionEvent : MonoBehaviour
     /// </summary>
     string SPLIT_COMMAND_PASER = @"[""!,]";//명령어 분리 정규식
 
+    private delegate void delayDelegeate();
+    private delayDelegeate _nextDelegate;
+
     public Dialogue[] GetDialogue()
     {
 
@@ -73,50 +76,69 @@ public class InteractionEvent : MonoBehaviour
         }
         contentNum = 0;
     }
+    public void SetNextContext()
+    {
+        //while (gameObject.GetComponentInParent<UIManager>().is_closing) { }//역시나 무한루프
+        Debug.Log("nextContext");
+        HandleCommand();
+        if (num < dialogue.dialouses.Length)
+        {
+            //Debug.Log("id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
+            gameObject.GetComponentInParent<UIManager>().Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
+                                                                                               //Debug.Log(dialogue.dialouses[num].context.Length);
+                                                                                               //Debug.Log(string.Format("num => {0} contentnum ={1}", num, contentNum));
+            contentlength = dialogue.dialouses[num].context.Length;
+            //Debug.Log("contentLength"+contentlength);//지금 자꾸 길이가 0이라고 나옴
+            if (contentlength == 1)
+            {
+                gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));
 
+            }
+            else
+            {
+                Debug.Log("선택지 부분");
+                string[] textSum = new string[contentlength];
+                //gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", ""));
+                for (int index = 0; index < contentlength; index++)//한번만 호출 되어야함
+                {
+                    //Debug.Log(string.Format("index =>{0} : content=>{1}",index, dialogue.dialouses[num].context[index]));
+                    textSum[index] = dialogue.dialouses[num].context[index];
+
+
+                }
+                gameObject.GetComponentInParent<UIManager>().SetContent(textSum);
+                if (start == false)
+                {
+                    start = true;
+                    StartCoroutine(ChocieTimer(10, start, Timeover));
+                }
+            }
+
+
+            command = Regex.Split(dialogue.dialouses[num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+        }
+        contentNum = 0;
+        num++;
+    }
     private void HandleDialogue()
     {
         if (Input.GetKeyDown(KeyCode.F))//f누를때 문제 생기는듯?
         {
-            HandleCommand();
-            if (num < dialogue.dialouses.Length)
+            //Debug.Log("선택 번호" + contentNum);
+            gameObject.GetComponentInParent<UIManager>().CloseSelceet(contentNum);
+
+            if (gameObject.GetComponentInParent<UIManager>().is_closing)
             {
-                //Debug.Log("id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
-                gameObject.GetComponentInParent<UIManager>().Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
-                                                                                                   //Debug.Log(dialogue.dialouses[num].context.Length);
-                //Debug.Log(string.Format("num => {0} contentnum ={1}", num, contentNum));
-                contentlength = dialogue.dialouses[num].context.Length;
-                //Debug.Log("contentLength"+contentlength);//지금 자꾸 길이가 0이라고 나옴
-                if (contentlength == 1)
-                {
-                    gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));  
-
-                }
-                else
-                {
-                    Debug.Log("선택지 부분");
-                    string[] textSum = new string[contentlength];
-                    //gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", ""));
-                    for (int index = 0; index < contentlength; index++)//한번만 호출 되어야함
-                    {
-                        //Debug.Log(string.Format("index =>{0} : content=>{1}",index, dialogue.dialouses[num].context[index]));
-                        textSum[index] = dialogue.dialouses[num].context[index];
-
-
-                    }
-                    gameObject.GetComponentInParent<UIManager>().SetContent(textSum);
-                    if (start == false)
-                    {
-                        start = true;
-                        StartCoroutine(ChocieTimer(10, start, Timeover));
-                    }
-                }
-
-
-                command = Regex.Split(dialogue.dialouses[num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+                Debug.Log("닫는중");
+                StartCoroutine(gameObject.GetComponentInParent<UIManager>().ClosingAnim(SetNextContext));
+                //Debug.Log("실행 했음");
+                return;
+                //클로징 중이면 넘어가면 안 됨
+                //Debug.Log("클로징 확인" + gameObject.GetComponentInParent<UIManager>().is_closing);
+                //return;
             }
-            contentNum = 0;
-            num++;
+            SetNextContext();
+ 
         }
         if (contentlength > 1)//선택지 부분
         {
@@ -277,11 +299,12 @@ public class InteractionEvent : MonoBehaviour
         if (contentlength > 1 && num <= dialogue.dialouses.Length)
         {
             Debug.Log(string.Format("{0} num {1} contentNum", num - 1, contentNum));
+            Debug.Log("Time over" + dialogue.dialouses[num - 1].context[0]);
             command = Regex.Split(dialogue.dialouses[num - 1].command[0], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
-            command = spaceremove(command);
-            CallFunction(command);
-            num++;
-            contentNum = 0;
+            //command = spaceremove(command);
+            //CallFunction(command);
+            //num++;
+            //contentNum = 0;
         }
     }
     IEnumerator ChocieTimer(float seconds, bool start, Action act)

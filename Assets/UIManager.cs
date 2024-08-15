@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.RegularExpressions;
 using TMPro;
 using Unity.VisualScripting;
@@ -16,7 +17,10 @@ public class UIManager : MonoBehaviour
     /// 선택지 생성한 오브젝트 담는 배열
     /// </summary>
     TMP_Text[] ContentArr = null;
-
+    /// <summary>
+    /// 다이얼로그 상자 크기
+    /// </summary>
+    float size;
 
     int select_count;
     //string test_str;
@@ -30,8 +34,19 @@ public class UIManager : MonoBehaviour
     public TMP_Text content;
 
     public bool is_select_show = false;
+    public bool is_closing = false;
 
     IEnumerator co = null;
+
+    public IEnumerator co_closeAinm;
+
+    Vector3 start_pos, end_pos;
+
+    //public delegate void TestDel();
+    //public TestDel testDel;
+
+    private delegate void delayDelegeate();
+
 
     [SerializeField]
     public float typing_speed = 0.05f;
@@ -40,8 +55,15 @@ public class UIManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //testDel = ActTest;
         co = Typing("");
         ContentArr = new TMP_Text[1];
+        size= content.rectTransform.rect.size.y;
+    }
+    private void Awake()
+    {
+        is_closing = false;
+        //co_closeAinm = ClosingAnim();
     }
 
     // Update is called once per frame
@@ -99,6 +121,8 @@ public class UIManager : MonoBehaviour
 
     IEnumerator Typing(string str)
     {
+        GameObject fixedVertical = content.transform.parent.gameObject;
+        fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = true;
         //첫 설정때 contentArr 설정 필요 지금 contentArr이 아무것도 없다고 되어있음 따라서 contentArr[0]에는 content가 들어가야함
         Debug.Log(str);
         Debug.Log(ContentArr.Length);
@@ -125,6 +149,7 @@ public class UIManager : MonoBehaviour
     }
     void DestroySelectBox()
     {
+        //Debug.Log("선택 위치"+c)
         Debug.Log("파괴");
         for(int i = 1; i < ContentArr.Length; i++)
         {
@@ -133,7 +158,67 @@ public class UIManager : MonoBehaviour
         ContentArr = new TMP_Text[1];
         //ContentArr = null;
     }
+    public void CloseSelceet(int choseIndex)
+    {
+        if (ContentArr.Length == 1) return;
+        Debug.Log("선택번호"+choseIndex);
+        //int childs = this.gameObject.transform.parent.transform.childCount;
+        int childs = content.transform.parent.transform.childCount;
+        Debug.Log("자식수"+childs);
+        is_closing = true;
+        Debug.Log("선택 자식"+content.transform.parent.GetChild(choseIndex).GetComponent<TMP_Text>().text);
+        GameObject selectobj = content.transform.parent.GetChild(choseIndex).gameObject;
+        string tmpstr = selectobj.GetComponent<TMP_Text>().text;
+        content.text = tmpstr;
+        start_pos=selectobj.transform.position;
+        end_pos =content.transform.parent.GetChild(childs-1).transform.position;
+        Debug.Log(string.Format("start_pos {0} end_pos{1}",start_pos,end_pos));
+        DestroySelectBox();
+        //StartCoroutine(ClosingAnim(()=>{}));
+        //StartCoroutine(ClosingAnim(testDel));
+        //0 1 2 아래로 -50x
+        //선택한 번호의 위치 계산 
+        //해당 위치로 스무스하게 이동
+        //enumerator를 이용해 보간 이동을 아래로 하도록 위치는 텍스트 3번째 기본 텍스트 위치 기준
+    }
+    public IEnumerator ClosingAnim(Action Act=null)
+    //IEnumerator ClosingAnim()
+    {
+        is_closing = true;
+        //yield return new WaitForSecondsRealtime(1);
+        GameObject fixedVertical = content.transform.parent.gameObject;
+        fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = false;
+        float t = 0;
+        float _duration = 1;
+        content.transform.position = start_pos;
+        Debug.Log("출발 위치 " + start_pos+"content 위치"+content.transform.position);
+        while (t < _duration)
+        {
+            //보간이동 내용
+            t = t / _duration;
+            //1 - (1 - x) * (1 - x);
+            float lerp_y=Mathf.Lerp(content.transform.position.y, end_pos.y, t);
+            Debug.Log("lerp y is" + lerp_y);
+            content.transform.position = new Vector3(content.transform.position.x, lerp_y, content.transform.position.z);
+            t += Time.deltaTime;
+            yield return null;
+        }
+        Debug.Log("1초 끝");
+        is_closing = false;
+        if (Act == null)
+        {
+            yield return null;
+        }
+        else
+        {
+            Act();
+        }
+    }
 
+    public void ActTest()
+    {
+        Debug.Log("액션 테스트");
+    }
     void CreatSelect(string[] strArr)
     {
         select_count = strArr.Length;
@@ -158,7 +243,7 @@ public class UIManager : MonoBehaviour
 
     IEnumerator TextSliding(string[] strArr)//배열로 받을 예정
     {
-        is_select_show = true;
+        //is_select_show = true;
         float delta = 0;
         GameObject fixedVertical = content.transform.parent.gameObject;
         fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = false;
@@ -168,7 +253,6 @@ public class UIManager : MonoBehaviour
         Debug.Log("여기" + ContentArr[2]);
         float endPos = ContentArr[0].transform.position.x;
         int count = 0;
-        float size = content.rectTransform.rect.size.y;
         Debug.Log("size" + size);
         while (delta <= duration&(count<3))
         {
