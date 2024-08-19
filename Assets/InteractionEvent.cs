@@ -7,6 +7,9 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using Unity.Loading;
+using Unity.VisualScripting.Antlr3.Runtime;
+using System.Threading.Tasks;
+using System.Threading;
 
 public class InteractionEvent : MonoBehaviour
 {
@@ -22,6 +25,11 @@ public class InteractionEvent : MonoBehaviour
 
     string[] command = new string[1];
     bool start = false;
+
+    /// <summary>
+    /// uimanager 스킬븥 접근 변수
+    /// </summary>
+    UIManager _Uimanager;
 
     /// <summary>
     /// 명령어 끼리 , 를 분리하는 정규식
@@ -40,24 +48,35 @@ public class InteractionEvent : MonoBehaviour
         }
         dialogue.line.y = DatabaseManager.instance.indexList[indexNum];//마지막 라인을 받아오기는 하지만 필요한건 마지막라인이 아닌 인덱스? 딕셔너리에 들어가는 그 y가 필요함
         dialogue.dialouses = DatabaseManager.instance.GetDialogues((int)dialogue.line.x, (int)dialogue.line.y);//y값 찾아오는 법
-        Debug.Log("길이" + dialogue.dialouses.Length);
+        command = Regex.Split(dialogue.dialouses[num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);//이게 위로 간다면?
+        //Debug.Log("길이" + dialogue.dialouses.Length);
         return dialogue.dialouses;
+    }
+
+    private void Awake()
+    {
+        _Uimanager = gameObject.GetComponentInParent<UIManager>();
     }
     private void Start()
     {
 
         GetDialogue();
-        command[0] = "";
+        //command[0] = "";
         foreach (var i in DatabaseManager.instance.indexList)
         {
-            Debug.Log(string.Format("list {0}", i));
+            //Debug.Log(string.Format("list {0}", i));
         }
+
     }
 
     private void Update()
     {
+
+
+
         if ((num <= dialogue.dialouses.Length))//line을 조절 해야함 대화가 끝나는 시점을 정하려면 line.y를 설정해야함
         {
+            
             HandleDialogue();
         }
         if (num > dialogue.dialouses.Length)
@@ -68,9 +87,16 @@ public class InteractionEvent : MonoBehaviour
 
     private void HandleCommand()
     {
+        //string str = "";
+        //foreach (var com in command)
+        //{
+        //    str += com;
+        //}
+        //Debug.Log("명령어" + str);//이전 명령어를 가져옴
+        //명령어 호출 시점 조절 했으므로 명령어 구별해서 호출 시점 구분
         if (command.Length > 0)
         {
-            Debug.Log("command size is " + command.Length);
+            Debug.Log("command size is " + command.Length); 
             command = spaceremove(command);
             CallFunction(command);
         }
@@ -81,17 +107,18 @@ public class InteractionEvent : MonoBehaviour
         //while (gameObject.GetComponentInParent<UIManager>().is_closing) { }//역시나 무한루프
         Debug.Log("nextContext");
         HandleCommand();
+        //Thread.Sleep(1000);
         if (num < dialogue.dialouses.Length)
         {
-            //Debug.Log("id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
-            gameObject.GetComponentInParent<UIManager>().Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
+            Debug.Log("명령어 호출 테스트"+"id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
+            _Uimanager.Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
                                                                                                //Debug.Log(dialogue.dialouses[num].context.Length);
                                                                                                //Debug.Log(string.Format("num => {0} contentnum ={1}", num, contentNum));
             contentlength = dialogue.dialouses[num].context.Length;
             //Debug.Log("contentLength"+contentlength);//지금 자꾸 길이가 0이라고 나옴
             if (contentlength == 1)
             {
-                gameObject.GetComponentInParent<UIManager>().SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));
+                _Uimanager.SetContent(string.Join("", dialogue.dialouses[num].context[contentNum]));
 
             }
             else
@@ -106,7 +133,7 @@ public class InteractionEvent : MonoBehaviour
 
 
                 }
-                gameObject.GetComponentInParent<UIManager>().SetContent(textSum);
+                _Uimanager.SetContent(textSum);
                 if (start == false)
                 {
                     start = true;
@@ -115,22 +142,22 @@ public class InteractionEvent : MonoBehaviour
             }
 
 
-            command = Regex.Split(dialogue.dialouses[num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
+            command = Regex.Split(dialogue.dialouses[++num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);//이게 위로 간다면?
         }
         contentNum = 0;
-        num++;
+        //num++;
     }
     private void HandleDialogue()
     {
         if (Input.GetKeyDown(KeyCode.F))//f누를때 문제 생기는듯?
         {
             //Debug.Log("선택 번호" + contentNum);
-            gameObject.GetComponentInParent<UIManager>().CloseSelceet(contentNum);
+            _Uimanager.CloseSelceet(contentNum);
 
-            if (gameObject.GetComponentInParent<UIManager>().is_closing)
+            if (_Uimanager.is_closing)
             {
                 Debug.Log("닫는중");
-                StartCoroutine(gameObject.GetComponentInParent<UIManager>().ClosingAnim(SetNextContext));
+                StartCoroutine(_Uimanager.ClosingAnim(SetNextContext));
                 //Debug.Log("실행 했음");
                 return;
                 //클로징 중이면 넘어가면 안 됨
@@ -154,7 +181,7 @@ public class InteractionEvent : MonoBehaviour
                 //countnum은 downArrow가 실행 되면 값이 변하게 되어있음
                 if (contentlength - 1 > (contentNum))
                 {
-                    gameObject.GetComponentInParent<UIManager>().DownArrow(ref contentNum);
+                    _Uimanager.DownArrow(ref contentNum);
                     command = Regex.Split(dialogue.dialouses[num - 1].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
                     return;
                 }
@@ -163,7 +190,7 @@ public class InteractionEvent : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.UpArrow) & (contentNum > 0))
             {
-                gameObject.GetComponentInParent<UIManager>().UpArrow(ref contentNum);
+                _Uimanager.UpArrow(ref contentNum);
                 command = Regex.Split(dialogue.dialouses[num - 1].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
                 return;
             }
@@ -193,6 +220,7 @@ public class InteractionEvent : MonoBehaviour
     {
         string SPLIT_NUM = @"([a-z]+|\ )+";//공백 분리 정규식//새로운식([a-z]+|\ )+
         string GET_COMMAND = @"[a-z]{1,}";
+        Debug.LogFormat("명령어 호출");
         foreach (var func in _functions)
         {
 
@@ -254,11 +282,14 @@ public class InteractionEvent : MonoBehaviour
     public void size(string[] command_args)//시작 끝 수치
     {
         Debug.Log(string.Format("switch_size {0} {1} {2}", command_args[0], command_args[1], command_args[2]));
+        _Uimanager.UpSizeText(int.Parse(command_args[0]), int.Parse(command_args[1]), int.Parse(command_args[2]));
+        
         //Debug.Log("switch_size");
     }
     public void speed(string[] command_args)//시작 끝 수치
     {
         Debug.Log(string.Format("switch_speed {0} {1} {2}", command_args[0], command_args[1], command_args[2]));
+        _Uimanager.TypingSpeed(int.Parse(command_args[0]), int.Parse(command_args[1]), int.Parse(command_args[2]));
     }
     public void time()
     {

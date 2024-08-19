@@ -181,6 +181,16 @@ public class UIManager : MonoBehaviour
         //해당 위치로 스무스하게 이동
         //enumerator를 이용해 보간 이동을 아래로 하도록 위치는 텍스트 3번째 기본 텍스트 위치 기준
     }
+
+    public void UpSizeText(int start,int end, int size)
+    {
+        Debug.Log(string.Format("start{0} end{1}, size{2}", content.text[start], content.text[end], size));
+    }
+    public void TypingSpeed(int start,int end,int speed)
+    {
+        Debug.Log(string.Format("start{0} end{1}, size{2}", content.text[start], content.text[end], size));
+    }
+
     public IEnumerator ClosingAnim(Action Act=null)
     //IEnumerator ClosingAnim()
     {
