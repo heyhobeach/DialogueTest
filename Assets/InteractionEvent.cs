@@ -11,9 +11,10 @@ using Unity.VisualScripting.Antlr3.Runtime;
 using System.Threading.Tasks;
 using System.Threading;
 
+
 public class InteractionEvent : MonoBehaviour
 {
-    // Start is called before the first frame update
+// Start is called before the first frame update
     [SerializeField] DialogueEvent dialogue;
     //UIManager ui;
 
@@ -38,6 +39,182 @@ public class InteractionEvent : MonoBehaviour
 
     private delegate void delayDelegeate();
     private delayDelegeate _nextDelegate;
+
+    /// <summary>
+    /// 이전에 실행될 명령어 리스트
+    /// </summary>
+    public List<Command> precommands=new List<Command>();
+    /// <summary>
+    /// 이후에 실행될 명령어 리스트
+    /// </summary>
+    public List<Command> postcommands = new List<Command>();
+
+    public abstract class Command
+    {
+        public UIManager _uiManger;
+        public virtual void OnExecute() { }
+    }
+
+    public class SizeCommand : Command
+    {
+        public int start;
+        public int end;
+        public int size;
+        public SizeCommand(string[] args,UIManager manager)
+        {
+            start = int.Parse(args[0]);
+            end = int.Parse(args[1]);
+            size = int.Parse(args[2]);
+            _uiManger = manager;
+            
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            _uiManger.UpSizeText(start, end, size); 
+        }
+    }
+
+    public class SpeedCommand : Command
+    {
+        public int start;
+        public int end;
+        public int size;
+        public SpeedCommand(string[] args, UIManager manager)
+        {
+            start = int.Parse(args[0]);
+            end = int.Parse(args[1]);
+            size = int.Parse(args[2]);
+            _uiManger = manager;
+
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            _uiManger.TypingSpeed(start, end, size);
+        }
+    }
+
+    public class TimeCommand : Command
+    {
+        public TimeCommand(UIManager manager)
+        {
+            _uiManger = manager;
+
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            //_uiManger.
+        }
+    }
+
+    public class BrutalCommand : Command
+    {
+        public BrutalCommand(UIManager manager)
+        {
+            _uiManger = manager;
+
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            //_uiManger.
+        }
+    }
+
+    public class PoliceCommand : Command
+    {
+        public PoliceCommand(UIManager manager)
+        {
+            _uiManger = manager;
+
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            //_uiManger.
+        }
+    }
+
+    public class PlayCommand : Command
+    {
+        public PlayCommand(UIManager manager)
+        {
+            _uiManger = manager;
+
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            //_uiManger.
+        }
+    }
+
+    public class AnimCommand : Command
+    {
+        public int start;
+        public int end;
+        public int size;
+        public AnimCommand(string[] args, UIManager manager)
+        {
+            start = int.Parse(args[0]);
+            end = int.Parse(args[1]);
+            size = int.Parse(args[2]);
+            _uiManger = manager;
+
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            //_uiManger.ani(start, end, size);
+        }
+    }
+
+    public class HigherCommand : Command
+    {
+        public int value;
+
+        public HigherCommand(string[] args, UIManager manager)
+        {
+            value = int.Parse(args[0]);
+            _uiManger = manager;
+
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            //_uiManger.ani(start, end, size);
+        }
+    }
+
+    public class MoveCommand : Command
+    {
+        public int id;
+        InteractionEvent _event;
+
+        public MoveCommand(string[] args, InteractionEvent manager)
+        {
+            id = int.Parse(args[0]);
+            _event = manager;
+
+        }
+        public override void OnExecute()
+        {
+            //base.OnExecute();
+            Debug.Log("onExecute테스트");
+            _event.move(id);
+            //_uiManger.ani(start, end, size);
+        }
+    }
 
     public Dialogue[] GetDialogue()
     {
@@ -73,7 +250,6 @@ public class InteractionEvent : MonoBehaviour
     {
 
 
-
         if ((num <= dialogue.dialouses.Length))//line을 조절 해야함 대화가 끝나는 시점을 정하려면 line.y를 설정해야함
         {
             
@@ -102,11 +278,21 @@ public class InteractionEvent : MonoBehaviour
         }
         contentNum = 0;
     }
+
+    private void CallCommand(ref List<Command> _commandList)
+    {
+        foreach(var _command in _commandList)
+        {
+            _command.OnExecute();
+        }
+        _commandList.RemoveAll(x => true);
+    }
     public void SetNextContext()
     {
         //while (gameObject.GetComponentInParent<UIManager>().is_closing) { }//역시나 무한루프
         Debug.Log("nextContext");
         HandleCommand();
+        CallCommand(ref precommands);
         //Thread.Sleep(1000);
         if (num < dialogue.dialouses.Length)
         {
@@ -145,6 +331,7 @@ public class InteractionEvent : MonoBehaviour
             command = Regex.Split(dialogue.dialouses[++num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);//이게 위로 간다면?
         }
         contentNum = 0;
+        CallCommand(ref postcommands);
         //num++;
     }
     private void HandleDialogue()
@@ -220,24 +407,31 @@ public class InteractionEvent : MonoBehaviour
     {
         string SPLIT_NUM = @"([a-z]+|\ )+";//공백 분리 정규식//새로운식([a-z]+|\ )+
         string GET_COMMAND = @"[a-z]{1,}";
-        Debug.LogFormat("명령어 호출");
-        foreach (var func in _functions)
+        //Debug.LogFormat("명령어 호출 1번째 요소" + _functions[0]);
+        Debug.Log("_functions 체크 " + _functions.ToString());
+        foreach (var func in _functions)    
         {
 
-            string[] strarr = Regex.Split(func, SPLIT_NUM);
+            string[] strarr = Regex.Split(func, SPLIT_NUM);//
             string[] filteredSubstrings = strarr.Where(s => s != Regex.Match(s, SPLIT_NUM).ToString()).ToArray();
             int n;
-            string[] numarr = Array.FindAll(strarr, s => !string.IsNullOrEmpty(s) && (int.TryParse(s, out n)));
-            Debug.Log(string.Format("mat => {0}", func));
+            //string[] numarr = Array.FindAll(strarr, s => !string.IsNullOrEmpty(s) && (int.TryParse(s, out n)));
+            Debug.Log(string.Format("mat 체크=>{0}", func));
             var mat = Regex.Matches(func, GET_COMMAND);
-            Debug.Log(string.Format("커맨드 체크 =>{0}", mat));
+            Debug.Log(string.Format("커맨드 체크 =>{0}", mat[0]));
             switch (mat[0].ToString())
             {
                 case "size":
-                    { size(filteredSubstrings); }
+                    {
+                        precommands.Add(new SizeCommand(filteredSubstrings, _Uimanager));
+                        //size(filteredSubstrings); 
+                    }
                     break;
                 case "speed":
-                    { speed(filteredSubstrings); }
+                    {
+                        precommands.Add(new SizeCommand(filteredSubstrings, _Uimanager));
+                        //speed(filteredSubstrings); 
+                    }
                     break;
                 case "time":
                     { time(); }
@@ -255,7 +449,10 @@ public class InteractionEvent : MonoBehaviour
                     { anime(filteredSubstrings); }
                     break;
                 case "move":
-                    { move(filteredSubstrings); }
+                    {
+                        postcommands.Add(new MoveCommand(filteredSubstrings,this));
+                        //postcommands.Add(new MoveCommand(filteredSubstrings, this));
+                    }
                     break;
 
             }
@@ -282,7 +479,9 @@ public class InteractionEvent : MonoBehaviour
     public void size(string[] command_args)//시작 끝 수치
     {
         Debug.Log(string.Format("switch_size {0} {1} {2}", command_args[0], command_args[1], command_args[2]));
-        _Uimanager.UpSizeText(int.Parse(command_args[0]), int.Parse(command_args[1]), int.Parse(command_args[2]));
+        //SizeCommand sizeCommand = new SizeCommand(command_args,_Uimanager);
+        //sizeCommand.size();
+        //_Uimanager.UpSizeText(int.Parse(command_args[0]), int.Parse(command_args[1]), int.Parse(command_args[2]));
         
         //Debug.Log("switch_size");
     }
@@ -311,10 +510,10 @@ public class InteractionEvent : MonoBehaviour
     {
         Debug.Log(string.Format("switch_anime {0} {1} {2}", command_args[0], command_args[1], command_args[2]));
     }
-    public void move(string[] command_args)
+    public void move(int id)//호출 순서? 조금 수정 필요
     {
-        Debug.Log(string.Format("switch_move {0}", command_args[0]));
-        num = int.Parse(command_args[0]);//그냥 변환이 안 되는중
+        Debug.Log(string.Format("switch_move {0}", id));
+        num = id;//그냥 변환이 안 되는중
         //Debug.Log("자료형"+command_args)
 
         num--;

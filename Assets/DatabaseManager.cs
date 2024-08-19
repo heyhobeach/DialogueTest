@@ -44,6 +44,7 @@ public class DatabaseManager : MonoBehaviour
                 dialogueDic.Add(i +1, dialogues[i]);
             }
             isFinish= true;
+            Debug.Log("디셔너리 크기 확인"+dialogueDic.Count);//크기 65//파싱이 잘 못 되어있음
         }
     }
     string CheckLangugea(Lang eLang)
