@@ -665,6 +665,7 @@ MonoBehaviour:
   namemesh: {fileID: 1073663785}
   content: {fileID: 822292360}
   is_select_show: 0
+  is_closing: 0
   typing_speed: 0.05
 --- !u!1 &1185292220
 GameObject:

@@ -126,6 +126,7 @@ public class UIManager : MonoBehaviour
         //첫 설정때 contentArr 설정 필요 지금 contentArr이 아무것도 없다고 되어있음 따라서 contentArr[0]에는 content가 들어가야함
         Debug.Log(str);
         Debug.Log(ContentArr.Length);
+        string pattern = "<[^>]*>?";
         if (ContentArr.Length>1)//사유 오브젝트 없음
         {
           DestroySelectBox();
@@ -140,9 +141,38 @@ public class UIManager : MonoBehaviour
         {
             yield return null;
         }
+        bool isTag = false;
+        string tag = "<";
         for (int i = 0; i < str.Length; i++)
         {
+            if (str[i] == '<')
+            {
+                Debug.Log("태그 시작");
+                isTag = true;
+                int j = 0;
+                while (str[i + j] != '>')
+                {
+                    Debug.Log("tag test" + str[i+j]);       
+                    j++;
+                    tag += str[i + j];
+                }
+            }
+            if (isTag == true && str[i]!='>')
+            {
+                Debug.Log("태그중");
+                continue;
+            }
+            if (str[i]=='>')
+            {
+                Debug.Log("태그 끝");
+                isTag = false;
+                Debug.Log("태그 =>" + tag);
+                content.text += tag;
+                tag = "<";
+                continue;
+            }
             content.text += str[i];
+            //content.text++str[i]+tag;
             yield return new WaitForSeconds(typing_speed);
         }
         Debug.Log("타이핑 종료");
@@ -182,13 +212,14 @@ public class UIManager : MonoBehaviour
         //enumerator를 이용해 보간 이동을 아래로 하도록 위치는 텍스트 3번째 기본 텍스트 위치 기준
     }
 
-    public void UpSizeText(int start,int end, int size)
+    public void UpSizeText(string _str,int start,int end, int size)
     {
-        Debug.Log(string.Format("start{0} end{1}, size{2}", content.text[start], content.text[end], size));
+        Debug.Log(string.Format("Upsize =>start{0} end{1}, size{2}", _str[start], _str[end], size));
+        Debug.Log("Text =>" + _str);
     }
     public void TypingSpeed(int start,int end,int speed)
     {
-        Debug.Log(string.Format("start{0} end{1}, size{2}", content.text[start], content.text[end], size));
+        Debug.Log(string.Format("TypingSpeed start{0} end{1}, size{2}", content.text[start], content.text[end], size));
     }
 
     public IEnumerator ClosingAnim(Action Act=null)

@@ -60,19 +60,21 @@ public class InteractionEvent : MonoBehaviour
         public int start;
         public int end;
         public int size;
-        public SizeCommand(string[] args,UIManager manager)
+        public string _str;
+        public SizeCommand(string[] args,string str,UIManager manager)
         {
             start = int.Parse(args[0]);
             end = int.Parse(args[1]);
             size = int.Parse(args[2]);
             _uiManger = manager;
+            _str = str;
             
         }
         public override void OnExecute()
         {
             //base.OnExecute();
             Debug.Log("onExecute테스트");
-            _uiManger.UpSizeText(start, end, size); 
+            _uiManger.UpSizeText(_str,start, end, size);
         }
     }
 
@@ -137,7 +139,7 @@ public class InteractionEvent : MonoBehaviour
         public override void OnExecute()
         {
             //base.OnExecute();
-            Debug.Log("onExecute테스트");
+            Debug.Log("Police onExecute테스트");
             //_uiManger.
         }
     }
@@ -290,12 +292,14 @@ public class InteractionEvent : MonoBehaviour
     public void SetNextContext()
     {
         //while (gameObject.GetComponentInParent<UIManager>().is_closing) { }//역시나 무한루프
-        Debug.Log("nextContext");
+        //Debug.Log("nextContext");
+        CallCommand(ref postcommands);
         HandleCommand();
-        CallCommand(ref precommands);
+
         //Thread.Sleep(1000);
         if (num < dialogue.dialouses.Length)
         {
+            CallCommand(ref precommands);
             Debug.Log("명령어 호출 테스트"+"id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
             _Uimanager.Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
                                                                                                //Debug.Log(dialogue.dialouses[num].context.Length);
@@ -331,7 +335,7 @@ public class InteractionEvent : MonoBehaviour
             command = Regex.Split(dialogue.dialouses[++num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);//이게 위로 간다면?
         }
         contentNum = 0;
-        CallCommand(ref postcommands);
+
         //num++;
     }
     private void HandleDialogue()
@@ -352,7 +356,7 @@ public class InteractionEvent : MonoBehaviour
                 //return;
             }
             SetNextContext();
- 
+
         }
         if (contentlength > 1)//선택지 부분
         {
@@ -408,7 +412,7 @@ public class InteractionEvent : MonoBehaviour
         string SPLIT_NUM = @"([a-z]+|\ )+";//공백 분리 정규식//새로운식([a-z]+|\ )+
         string GET_COMMAND = @"[a-z]{1,}";
         //Debug.LogFormat("명령어 호출 1번째 요소" + _functions[0]);
-        Debug.Log("_functions 체크 " + _functions.ToString());
+        //Debug.Log("_functions 체크 " + _functions.ToString());
         foreach (var func in _functions)    
         {
 
@@ -423,13 +427,13 @@ public class InteractionEvent : MonoBehaviour
             {
                 case "size":
                     {
-                        precommands.Add(new SizeCommand(filteredSubstrings, _Uimanager));
+                        precommands.Add(new SizeCommand(filteredSubstrings, dialogue.dialouses[num].context[contentNum], _Uimanager));
                         //size(filteredSubstrings); 
                     }
                     break;
                 case "speed":
                     {
-                        precommands.Add(new SizeCommand(filteredSubstrings, _Uimanager));
+                        precommands.Add(new SpeedCommand(filteredSubstrings, _Uimanager));
                         //speed(filteredSubstrings); 
                     }
                     break;
@@ -440,7 +444,10 @@ public class InteractionEvent : MonoBehaviour
                     { brutal(); }
                     break;
                 case "police":
-                    { police(); }
+                    {
+                        postcommands.Add(new PoliceCommand(_Uimanager));
+                        //police(); 
+                    }
                     break;
                 case "play":
                     { play(); }
