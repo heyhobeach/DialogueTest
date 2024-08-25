@@ -212,13 +212,23 @@ public class UIManager : MonoBehaviour
         //enumerator를 이용해 보간 이동을 아래로 하도록 위치는 텍스트 3번째 기본 텍스트 위치 기준
     }
 
-    public void UpSizeText(string _str,int start,int end, int size)//리턴으로 진행하는게 맞을듯 함 그런데 이제 텍스트 삽입이 여러개가 되어야한다면 해당 부분
+    public string UpSizeText(string _str,int start,int end, int size)//리턴으로 진행하는게 맞을듯 함 그런데 이제 텍스트 삽입이 여러개가 되어야한다면 해당 부분
     {
+        size += 20;
         string headtag = string.Format("<size={0}>", size);
         string tailtag = string.Format("</size>");
+        string targetstring = "";
+        for(int i = start; i <= end; i++)
+        {
+            targetstring += _str[i];
+        }
+        string change_string = headtag+targetstring+tailtag;
+        Debug.Log(targetstring);
+        
         Debug.Log(string.Format("태그=>{0} 내용 {1}",headtag,tailtag));
         Debug.Log(string.Format("Upsize =>start{0} end{1}, size{2}", _str[start], _str[end], size));
         Debug.Log("Text =>" + _str);
+        return _str.Replace(targetstring, change_string); 
     }
     public void TypingSpeed(int start,int end,int speed)
     {

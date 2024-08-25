@@ -53,6 +53,7 @@ public class InteractionEvent : MonoBehaviour
     {
         public UIManager _uiManger;
         public virtual void OnExecute() { }
+        public virtual string OnExecute(string str_) { return str_; }
     }
 
     public class SizeCommand : Command
@@ -70,11 +71,12 @@ public class InteractionEvent : MonoBehaviour
             _str = str;
             
         }
-        public override void OnExecute()
+        public override string OnExecute(string str_="")
         {
             //base.OnExecute();
             Debug.Log("onExecute테스트");
-            _uiManger.UpSizeText(_str,start, end, size);
+            _str = _uiManger.UpSizeText(_str,start, end, size);
+            return _str;
         }
     }
 
@@ -285,7 +287,15 @@ public class InteractionEvent : MonoBehaviour
     {
         foreach(var _command in _commandList)
         {
+            if (_command is SizeCommand)
+            {
+                Debug.Log("sizeCommand 호출");
+                string str =_command.OnExecute("");//이 str을 대입
+                Debug.Log("size 변경후 " + str);
+                continue;
+            }
             _command.OnExecute();
+
         }
         _commandList.RemoveAll(x => true);
     }
