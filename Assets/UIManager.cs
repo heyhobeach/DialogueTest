@@ -73,10 +73,6 @@ public class UIManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    private void SetDefaultTypingSpeed()
-    {
-        typing_speed = DEFAULT_SPEED;
-    }
     public void Setname(string name)
     {
         namemesh.text = name;
@@ -110,16 +106,22 @@ public class UIManager : MonoBehaviour
             {
                 TMP.color = Color.gray;
             }
-
         }
     }
-
+    private void Increase(ref int num,int pivot)
+    {
+        if (num >= pivot)
+        {
+            num++;
+        }
+    }
     private void SetTypingSpeed(int start,int end,int speed)
     {
         typing_speed_arr[0] = start;
         typing_speed_arr[1] = end;
         typing_speed_arr[2] = speed;
     }
+
     public void UpArrow(ref int countNum)
     {
         if (is_select_show) return;
@@ -133,7 +135,6 @@ public class UIManager : MonoBehaviour
         countNum++;
         ChangeText(countNum);
     }
-
     IEnumerator Typing(string str)
     {
         GameObject fixedVertical = content.transform.parent.gameObject;
@@ -156,7 +157,6 @@ public class UIManager : MonoBehaviour
         }
         bool isTag = false;
         string tag = "<";
-        int text_length = typing_speed_arr[1] - typing_speed_arr[0];
         for (int i = 0; i < str.Length; i++)
         {
             if (str[i] == '<')
@@ -171,27 +171,13 @@ public class UIManager : MonoBehaviour
                     j++;
                     tag += str[i + j];
                 }
-                //if (typing_speed_arr[0] >= i)
-                //{
-                //    j++;
-                //    typing_speed_arr[0] += j;
-                //    //typing_speed_arr[1] += j;
-                //    Debug.Log((text_length+j)+"글자 수");
-                //}
                 
             }
             if (isTag == true && str[i]!='>')
             {
                 //Debug.Log("태그중");
-                if (typing_speed_arr[0] >= i)//여기 부분을 함수로 만들어야할듯 왜냐하면 애니메이션이나 이런건 재 사용해야하므로
-                {
-                    typing_speed_arr[0]++;
-                }
-                if (typing_speed_arr[1] >= i)
-                {
-                    typing_speed_arr[1]++;
-                }
-
+                Increase(ref typing_speed_arr[0], i);
+                Increase(ref typing_speed_arr[1], i);
                 continue;
             }
             if (str[i]=='>')
@@ -199,36 +185,18 @@ public class UIManager : MonoBehaviour
                 //Debug.Log("태그 끝");
                 isTag = false;
                 //Debug.Log("태그 =>" + tag);
-                if (typing_speed_arr[0] >= i)
-                {
-                    typing_speed_arr[0]++;
-                }
-                if (typing_speed_arr[1] >= i)
-                {
-                    typing_speed_arr[1]++;
-                }
+                Increase(ref typing_speed_arr[0], i);
+                Increase(ref typing_speed_arr[1], i);
                 content.text += tag;
                 tag = "<";
                 Debug.Log(typing_speed_arr[0]+""+ typing_speed_arr[1]);
                 continue;
             }
-            //if (i >= typing_speed_arr[0] && i <= typing_speed_arr[1])
-            //{
-            //    typing_speed = typing_speed_arr[2];
-            //}
-            //else
-            //{
-            //    SetDefaultTypingSpeed();
-            //}
 
-            if (typing_speed_arr[0] != 0 & typing_speed_arr[1] != 0 & typing_speed_arr[2] != 0)
-            {
-                Debug.Log(string.Format("start {0} end{1} speed{2}", typing_speed_arr[0], typing_speed_arr[1], typing_speed_arr[2]));
-                Debug.Log(string.Format("시작 {0} 끝{1} ", str[typing_speed_arr[0]], str[typing_speed_arr[1]]));//태그의 길이는 어떻게 할 것인지
-            }
             if (i >= typing_speed_arr[0] && i <= typing_speed_arr[1])
             {
                 typing_speed = typing_speed_arr[2] * 0.02f;
+                Debug.Log("typing_speed=>" + typing_speed);
             }
             else
             {
@@ -238,6 +206,7 @@ public class UIManager : MonoBehaviour
             //content.text++str[i]+tag;
             yield return new WaitForSeconds(typing_speed);
         }
+        //SetTypingSpeed(-1, -1, (int)(DEFAULT_SPEED*0.02f));
         Debug.Log("타이핑 종료");
         Array.Clear(typing_speed_arr, 0,typing_speed_arr.Length);
     }
