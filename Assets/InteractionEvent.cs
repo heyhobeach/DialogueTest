@@ -291,6 +291,7 @@ public class InteractionEvent : MonoBehaviour
             {
                 Debug.Log("sizeCommand 호출");
                 string str =_command.OnExecute("");//이 str을 대입
+                dialogue.dialouses[num].context[contentNum] = str;
                 Debug.Log("size 변경후 " + str);
                 continue;
             }

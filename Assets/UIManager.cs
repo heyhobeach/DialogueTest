@@ -36,6 +36,11 @@ public class UIManager : MonoBehaviour
     public bool is_select_show = false;
     public bool is_closing = false;
 
+    /// <summary>
+    /// start,end,speed
+    /// </summary>
+    private int[] typing_speed_arr = { 0, 0, 0 };
+
     IEnumerator co = null;
 
     public IEnumerator co_closeAinm;
@@ -50,6 +55,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField]
     public float typing_speed = 0.05f;
+    private const float DEFAULT_SPEED= 0.05f;
     //public InteractionEvent interactionEvent;
 
     // Start is called before the first frame update
@@ -67,7 +73,10 @@ public class UIManager : MonoBehaviour
     }
 
     // Update is called once per frame
-
+    private void SetDefaultTypingSpeed()
+    {
+        typing_speed = DEFAULT_SPEED;
+    }
     public void Setname(string name)
     {
         namemesh.text = name;
@@ -105,6 +114,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    private void SetTypingSpeed(int start,int end,int speed)
+    {
+        typing_speed_arr[0] = start;
+        typing_speed_arr[1] = end;
+        typing_speed_arr[2] = speed;
+    }
     public void UpArrow(ref int countNum)
     {
         if (is_select_show) return;
@@ -124,8 +139,6 @@ public class UIManager : MonoBehaviour
         GameObject fixedVertical = content.transform.parent.gameObject;
         fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = true;
         //첫 설정때 contentArr 설정 필요 지금 contentArr이 아무것도 없다고 되어있음 따라서 contentArr[0]에는 content가 들어가야함
-        Debug.Log(str);
-        Debug.Log(ContentArr.Length);
         string pattern = "<[^>]*>?";
         if (ContentArr.Length>1)//사유 오브젝트 없음
         {
@@ -143,39 +156,90 @@ public class UIManager : MonoBehaviour
         }
         bool isTag = false;
         string tag = "<";
+        int text_length = typing_speed_arr[1] - typing_speed_arr[0];
         for (int i = 0; i < str.Length; i++)
         {
             if (str[i] == '<')
             {
-                Debug.Log("태그 시작");
+                //Debug.Log("태그 시작");
                 isTag = true;
                 int j = 0;
+
                 while (str[i + j] != '>')
                 {
-                    Debug.Log("tag test" + str[i+j]);       
+                    //Debug.Log("tag test" + str[i+j]);       
                     j++;
                     tag += str[i + j];
                 }
+                //if (typing_speed_arr[0] >= i)
+                //{
+                //    j++;
+                //    typing_speed_arr[0] += j;
+                //    //typing_speed_arr[1] += j;
+                //    Debug.Log((text_length+j)+"글자 수");
+                //}
+                
             }
             if (isTag == true && str[i]!='>')
             {
-                Debug.Log("태그중");
+                //Debug.Log("태그중");
+                if (typing_speed_arr[0] >= i)//여기 부분을 함수로 만들어야할듯 왜냐하면 애니메이션이나 이런건 재 사용해야하므로
+                {
+                    typing_speed_arr[0]++;
+                }
+                if (typing_speed_arr[1] >= i)
+                {
+                    typing_speed_arr[1]++;
+                }
+
                 continue;
             }
             if (str[i]=='>')
             {
-                Debug.Log("태그 끝");
+                //Debug.Log("태그 끝");
                 isTag = false;
-                Debug.Log("태그 =>" + tag);
+                //Debug.Log("태그 =>" + tag);
+                if (typing_speed_arr[0] >= i)
+                {
+                    typing_speed_arr[0]++;
+                }
+                if (typing_speed_arr[1] >= i)
+                {
+                    typing_speed_arr[1]++;
+                }
                 content.text += tag;
                 tag = "<";
+                Debug.Log(typing_speed_arr[0]+""+ typing_speed_arr[1]);
                 continue;
+            }
+            //if (i >= typing_speed_arr[0] && i <= typing_speed_arr[1])
+            //{
+            //    typing_speed = typing_speed_arr[2];
+            //}
+            //else
+            //{
+            //    SetDefaultTypingSpeed();
+            //}
+
+            if (typing_speed_arr[0] != 0 & typing_speed_arr[1] != 0 & typing_speed_arr[2] != 0)
+            {
+                Debug.Log(string.Format("start {0} end{1} speed{2}", typing_speed_arr[0], typing_speed_arr[1], typing_speed_arr[2]));
+                Debug.Log(string.Format("시작 {0} 끝{1} ", str[typing_speed_arr[0]], str[typing_speed_arr[1]]));//태그의 길이는 어떻게 할 것인지
+            }
+            if (i >= typing_speed_arr[0] && i <= typing_speed_arr[1])
+            {
+                typing_speed = typing_speed_arr[2] * 0.02f;
+            }
+            else
+            {
+                typing_speed = DEFAULT_SPEED;
             }
             content.text += str[i];
             //content.text++str[i]+tag;
             yield return new WaitForSeconds(typing_speed);
         }
         Debug.Log("타이핑 종료");
+        Array.Clear(typing_speed_arr, 0,typing_speed_arr.Length);
     }
     void DestroySelectBox()
     {
@@ -214,7 +278,6 @@ public class UIManager : MonoBehaviour
 
     public string UpSizeText(string _str,int start,int end, int size)//리턴으로 진행하는게 맞을듯 함 그런데 이제 텍스트 삽입이 여러개가 되어야한다면 해당 부분
     {
-        size += 20;
         string headtag = string.Format("<size={0}>", size);
         string tailtag = string.Format("</size>");
         string targetstring = "";
@@ -223,16 +286,12 @@ public class UIManager : MonoBehaviour
             targetstring += _str[i];
         }
         string change_string = headtag+targetstring+tailtag;
-        Debug.Log(targetstring);
-        
-        Debug.Log(string.Format("태그=>{0} 내용 {1}",headtag,tailtag));
-        Debug.Log(string.Format("Upsize =>start{0} end{1}, size{2}", _str[start], _str[end], size));
-        Debug.Log("Text =>" + _str);
         return _str.Replace(targetstring, change_string); 
     }
     public void TypingSpeed(int start,int end,int speed)
     {
-        Debug.Log(string.Format("TypingSpeed start{0} end{1}, size{2}", content.text[start], content.text[end], size));
+        Debug.Log(string.Format("TypingSpeed start{0} end{1}, speed{2}", content.text[start], content.text[end], speed));
+        SetTypingSpeed(start,end,speed);
     }
 
     public IEnumerator ClosingAnim(Action Act=null)
