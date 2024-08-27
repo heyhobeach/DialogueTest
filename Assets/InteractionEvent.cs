@@ -10,13 +10,16 @@ using Unity.Loading;
 using Unity.VisualScripting.Antlr3.Runtime;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 
 public class InteractionEvent : MonoBehaviour
 {
-// Start is called before the first frame update
+    // Start is called before the first frame update
     [SerializeField] DialogueEvent dialogue;
     //UIManager ui;
+
+    private bool isSkip = false;
 
     int num = 0;
     int contentNum = 0;
@@ -43,7 +46,7 @@ public class InteractionEvent : MonoBehaviour
     /// <summary>
     /// 이전에 실행될 명령어 리스트
     /// </summary>
-    public List<Command> precommands=new List<Command>();
+    public List<Command> precommands = new List<Command>();
     /// <summary>
     /// 이후에 실행될 명령어 리스트
     /// </summary>
@@ -62,20 +65,20 @@ public class InteractionEvent : MonoBehaviour
         public int end;
         public int size;
         public string _str;
-        public SizeCommand(string[] args,string str,UIManager manager)
+        public SizeCommand(string[] args, string str, UIManager manager)
         {
             start = int.Parse(args[0]);
             end = int.Parse(args[1]);
             size = int.Parse(args[2]);
             _uiManger = manager;
             _str = str;
-            
+
         }
-        public override string OnExecute(string str_="")
+        public override string OnExecute(string str_ = "")
         {
             //base.OnExecute();
             Debug.Log("onExecute테스트");
-            _str = _uiManger.UpSizeText(_str,start, end, size);
+            _str = _uiManger.UpSizeText(_str, start, end, size);
             return _str;
         }
     }
@@ -103,24 +106,27 @@ public class InteractionEvent : MonoBehaviour
 
     public class TimeCommand : Command
     {
-        public TimeCommand(UIManager manager)
+        InteractionEvent _manager;
+        public TimeCommand(InteractionEvent manager)
         {
-            _uiManger = manager;
+            _manager = manager;
 
         }
         public override void OnExecute()
         {
             //base.OnExecute();
-            Debug.Log("onExecute테스트");
+            Debug.Log("Skip onExecute테스트");
+            _manager.StartCoroutine(_manager.ChocieTimer(5, true, null));
             //_uiManger.
         }
     }
 
     public class BrutalCommand : Command
     {
-        public BrutalCommand(UIManager manager)
+        InteractionEvent _manager;
+        public BrutalCommand(InteractionEvent manager)
         {
-            _uiManger = manager;
+            _manager = manager;
 
         }
         public override void OnExecute()
@@ -133,31 +139,33 @@ public class InteractionEvent : MonoBehaviour
 
     public class PoliceCommand : Command
     {
-        public PoliceCommand(UIManager manager)
+        InteractionEvent _manager;
+        public PoliceCommand(InteractionEvent manager)
         {
-            _uiManger = manager;
+            _manager = manager;
 
         }
         public override void OnExecute()
         {
             //base.OnExecute();
             Debug.Log("Police onExecute테스트");
-            //_uiManger.
+            //_manager.
         }
     }
 
     public class PlayCommand : Command
     {
-        public PlayCommand(UIManager manager)
+        InteractionEvent _manager;
+        public PlayCommand(InteractionEvent manager)
         {
-            _uiManger = manager;
+            _manager = manager;
 
         }
         public override void OnExecute()
         {
             //base.OnExecute();
             Debug.Log("onExecute테스트");
-            //_uiManger.
+            //_manager.
         }
     }
 
@@ -165,12 +173,12 @@ public class InteractionEvent : MonoBehaviour
     {
         public int start;
         public int end;
-        public int size;
+        public int aniNum;
         public AnimCommand(string[] args, UIManager manager)
         {
             start = int.Parse(args[0]);
             end = int.Parse(args[1]);
-            size = int.Parse(args[2]);
+            aniNum = int.Parse(args[2]);
             _uiManger = manager;
 
         }
@@ -178,18 +186,18 @@ public class InteractionEvent : MonoBehaviour
         {
             //base.OnExecute();
             Debug.Log("onExecute테스트");
-            //_uiManger.ani(start, end, size);
+            _uiManger.TextAni(start, end, aniNum);
         }
     }
 
     public class HigherCommand : Command
     {
         public int value;
-
-        public HigherCommand(string[] args, UIManager manager)
+        InteractionEvent _manager;
+        public HigherCommand(string[] args, InteractionEvent manager)
         {
             value = int.Parse(args[0]);
-            _uiManger = manager;
+            _manager = manager;
 
         }
         public override void OnExecute()
@@ -256,7 +264,7 @@ public class InteractionEvent : MonoBehaviour
 
         if ((num <= dialogue.dialouses.Length))//line을 조절 해야함 대화가 끝나는 시점을 정하려면 line.y를 설정해야함
         {
-            
+
             HandleDialogue();
         }
         if (num > dialogue.dialouses.Length)
@@ -276,7 +284,7 @@ public class InteractionEvent : MonoBehaviour
         //명령어 호출 시점 조절 했으므로 명령어 구별해서 호출 시점 구분
         if (command.Length > 0)
         {
-            Debug.Log("command size is " + command.Length); 
+            Debug.Log("command size is " + command.Length);
             command = spaceremove(command);
             CallFunction(command);
         }
@@ -285,12 +293,12 @@ public class InteractionEvent : MonoBehaviour
 
     private void CallCommand(ref List<Command> _commandList)
     {
-        foreach(var _command in _commandList)
+        foreach (var _command in _commandList)
         {
             if (_command is SizeCommand)
             {
                 Debug.Log("sizeCommand 호출");
-                string str =_command.OnExecute("");//이 str을 대입
+                string str = _command.OnExecute("");//이 str을 대입
                 dialogue.dialouses[num].context[contentNum] = str;
                 Debug.Log("size 변경후 " + str);
                 continue;
@@ -311,10 +319,10 @@ public class InteractionEvent : MonoBehaviour
         if (num < dialogue.dialouses.Length)
         {
             CallCommand(ref precommands);//이전에 실행되어야할 명령어들
-            Debug.Log("명령어 호출 테스트"+"id" + dialogue.dialouses[num].id +"이름" + dialogue.dialouses[num].name);
+            Debug.Log("명령어 호출 테스트" + "id" + dialogue.dialouses[num].id + "이름" + dialogue.dialouses[num].name);
             _Uimanager.Setname(dialogue.dialouses[num].name);//이름 변경 되는중 마찬가지로 내용도 같이 하면 될듯
-                                                                                               //Debug.Log(dialogue.dialouses[num].context.Length);
-                                                                                               //Debug.Log(string.Format("num => {0} contentnum ={1}", num, contentNum));
+                                                             //Debug.Log(dialogue.dialouses[num].context.Length);
+                                                             //Debug.Log(string.Format("num => {0} contentnum ={1}", num, contentNum));
             contentlength = dialogue.dialouses[num].context.Length;
             //Debug.Log("contentLength"+contentlength);//지금 자꾸 길이가 0이라고 나옴
             if (contentlength == 1)
@@ -351,8 +359,9 @@ public class InteractionEvent : MonoBehaviour
     }
     private void HandleDialogue()
     {
-        if (Input.GetKeyDown(KeyCode.F))//f누를때 문제 생기는듯?
+        if (Input.GetKeyDown(KeyCode.F) || isSkip)//f누를때 문제 생기는듯?
         {
+            isSkip = false;
             //Debug.Log("선택 번호" + contentNum);
             _Uimanager.CloseSelceet(contentNum);
 
@@ -408,7 +417,7 @@ public class InteractionEvent : MonoBehaviour
     {
         Debug.Log("대화끝");
 
-        if (Input.GetKeyDown(KeyCode.X)&(indexNum< DatabaseManager.instance.indexList.Count))
+        if (Input.GetKeyDown(KeyCode.X) & (indexNum < DatabaseManager.instance.indexList.Count))
         {
             dialogue.line.x = ++dialogue.line.y;
             indexNum++;
@@ -424,7 +433,7 @@ public class InteractionEvent : MonoBehaviour
         string GET_COMMAND = @"[a-z]{1,}";
         //Debug.LogFormat("명령어 호출 1번째 요소" + _functions[0]);
         //Debug.Log("_functions 체크 " + _functions.ToString());
-        foreach (var func in _functions)    
+        foreach (var func in _functions)
         {
 
             string[] strarr = Regex.Split(func, SPLIT_NUM);//
@@ -449,27 +458,44 @@ public class InteractionEvent : MonoBehaviour
                     }
                     break;
                 case "time":
-                    { time(); }
+                    {
+                        precommands.Add(new TimeCommand(this));
+                        //time(); 
+                    }
                     break;
                 case "brutal":
-                    { brutal(); }
+                    {
+                        postcommands.Add(new BrutalCommand(this));
+                        brutal(); 
+                    }
                     break;
                 case "police":
                     {
-                        postcommands.Add(new PoliceCommand(_Uimanager));
+                        postcommands.Add(new PoliceCommand(this));
                         //police(); 
                     }
                     break;
                 case "play":
-                    { play(); }
+                    {
+                        postcommands.Add(new PlayCommand(this));
+                    }
                     break;
                 case "anime":
-                    { anime(filteredSubstrings); }
+                    { 
+                        precommands.Add(new AnimCommand(filteredSubstrings,_Uimanager));
+                        //anime(filteredSubstrings); 
+                    }
                     break;
                 case "move":
                     {
-                        postcommands.Add(new MoveCommand(filteredSubstrings,this));
+                        postcommands.Add(new MoveCommand(filteredSubstrings, this));
                         //postcommands.Add(new MoveCommand(filteredSubstrings, this));
+                    }
+                    break;
+                case "higher"://시작 전 혹은 후 라고 되어있는데 언제 어떻게 될지
+                    {
+                        postcommands.Add(new HigherCommand(filteredSubstrings,this));
+                        //precommands.Add(new HigherCommand(filteredSubstrings, this));
                     }
                     break;
 
@@ -500,7 +526,7 @@ public class InteractionEvent : MonoBehaviour
         //SizeCommand sizeCommand = new SizeCommand(command_args,_Uimanager);
         //sizeCommand.size();
         //_Uimanager.UpSizeText(int.Parse(command_args[0]), int.Parse(command_args[1]), int.Parse(command_args[2]));
-        
+
         //Debug.Log("switch_size");
     }
     public void speed(string[] command_args)//시작 끝 수치
@@ -555,7 +581,7 @@ public class InteractionEvent : MonoBehaviour
             //contentNum = 0;
         }
     }
-    IEnumerator ChocieTimer(float seconds, bool start, Action act)
+    IEnumerator ChocieTimer(float seconds, bool start, Action? act)
     {
         if (start)
         {
@@ -564,6 +590,16 @@ public class InteractionEvent : MonoBehaviour
             Debug.Log("time 코루틴 시작");
         }
 
-        act();
+        if (act == null)
+        {
+            Debug.Log("null이므로 skip 실행");
+            isSkip = true;
+        }
+        else
+        {
+            Debug.Log("선택지 act");
+            act();
+        }
+
     }
 }

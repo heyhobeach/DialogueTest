@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
@@ -50,6 +51,8 @@ public class UIManager : MonoBehaviour
     //public delegate void TestDel();
     //public TestDel testDel;
 
+    bool isTyping = false;
+
     private delegate void delayDelegeate();
 
 
@@ -62,7 +65,7 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         //testDel = ActTest;
-        co = Typing("");
+        co = Typing("",isTyping);
         ContentArr = new TMP_Text[1];
         size= content.rectTransform.rect.size.y;
     }
@@ -81,7 +84,7 @@ public class UIManager : MonoBehaviour
     public void SetContent(string _content)
     {
         StopCoroutine(co);
-        co = Typing(_content);
+        co = Typing(_content,isTyping);
         StartCoroutine(co);
     }
     public void SetContent(string[] _contentArr)//배열로 받을 예정
@@ -108,6 +111,11 @@ public class UIManager : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// 두 값을 비교해서 num이 더 크다면 num을 증가시킴
+    /// </summary>
+    /// <param name="num">태그에서 start,end숫자</param>
+    /// <param name="pivot">for문 에서 i숫자</param>
     private void Increase(ref int num,int pivot)
     {
         if (num >= pivot)
@@ -135,16 +143,21 @@ public class UIManager : MonoBehaviour
         countNum++;
         ChangeText(countNum);
     }
-    IEnumerator Typing(string str)
+    IEnumerator Typing(string str,bool s)
     {
         GameObject fixedVertical = content.transform.parent.gameObject;
         fixedVertical.GetComponent<VerticalLayoutGroup>().enabled = true;
         //첫 설정때 contentArr 설정 필요 지금 contentArr이 아무것도 없다고 되어있음 따라서 contentArr[0]에는 content가 들어가야함
         string pattern = "<[^>]*>?";
+        if(isTyping)
+        {
+            Array.Clear(typing_speed_arr,0,typing_speed_arr.Length);
+            typing_speed = DEFAULT_SPEED;
+        }
+        isTyping = true;
         if (ContentArr.Length>1)//사유 오브젝트 없음
         {
           DestroySelectBox();
-        
         }
         content.text = null;
         if (content.color != Color.black)
@@ -155,43 +168,10 @@ public class UIManager : MonoBehaviour
         {
             yield return null;
         }
-        bool isTag = false;
         string tag = "<";
         for (int i = 0; i < str.Length; i++)
         {
-            if (str[i] == '<')
-            {
-                //Debug.Log("태그 시작");
-                isTag = true;
-                int j = 0;
-
-                while (str[i + j] != '>')
-                {
-                    //Debug.Log("tag test" + str[i+j]);       
-                    j++;
-                    tag += str[i + j];
-                }
-                
-            }
-            if (isTag == true && str[i]!='>')
-            {
-                //Debug.Log("태그중");
-                Increase(ref typing_speed_arr[0], i);
-                Increase(ref typing_speed_arr[1], i);
-                continue;
-            }
-            if (str[i]=='>')
-            {
-                //Debug.Log("태그 끝");
-                isTag = false;
-                //Debug.Log("태그 =>" + tag);
-                Increase(ref typing_speed_arr[0], i);
-                Increase(ref typing_speed_arr[1], i);
-                content.text += tag;
-                tag = "<";
-                Debug.Log(typing_speed_arr[0]+""+ typing_speed_arr[1]);
-                continue;
-            }
+            IgnoreTag(str, ref i, ref typing_speed_arr);
 
             if (i >= typing_speed_arr[0] && i <= typing_speed_arr[1])
             {
@@ -210,6 +190,42 @@ public class UIManager : MonoBehaviour
         Debug.Log("타이핑 종료");
         Array.Clear(typing_speed_arr, 0,typing_speed_arr.Length);
     }
+
+    /// <summary>
+    /// 태그를 무시하기 위한 함수
+    /// </summary>
+    /// <param name="str">태그가 포함된 문자열 전체</param>
+    /// <param name="i">반복문 안에서 사용되는 반복되는 i 태그를 벗어날때까지 i를 증가 시킴</param>
+    /// <param name="start_end_arr">명령어 사용시 처음과 끝</param>
+    void IgnoreTag(string str, ref int i, ref int[] start_end_arr)
+    {
+        if (str[i] == '<')
+        {
+            //Debug.Log("태그 시작");
+            int j = 0;
+            string tag = "<";
+
+            while (true)//태그 무시하고 삽입하기 위함 태그 무시하는게 
+            {
+                //Debug.Log("tag test" + str[i+j]);       
+                j++;
+                tag += str[i + j];
+                Increase(ref start_end_arr[0], i);
+                Increase(ref start_end_arr[1], i);
+                if (str[i + j] == '>')
+                {
+                    i += j;
+                    Increase(ref start_end_arr[0], i);
+                    Increase(ref start_end_arr[1], i);
+                    Debug.Log("Tag = " + tag);
+                    content.text += tag;
+                    i++;
+                    break;
+                }
+            }
+        }
+    }
+
     void DestroySelectBox()
     {
         //Debug.Log("선택 위치"+c)
@@ -260,6 +276,7 @@ public class UIManager : MonoBehaviour
     public void TypingSpeed(int start,int end,int speed)
     {
         Debug.Log(string.Format("TypingSpeed start{0} end{1}, speed{2}", content.text[start], content.text[end], speed));
+        isTyping = false;
         SetTypingSpeed(start,end,speed);
     }
 
@@ -296,10 +313,20 @@ public class UIManager : MonoBehaviour
             Act();
         }
     }
-
-    public void ActTest()
+    /// <summary>
+    /// 애니메이션은 타이핑 되는중에 출력도 다 되어야함 
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <param name="aniNum"></param>
+    public void TextAni(int start,int end,int aniNum)
     {
-        Debug.Log("액션 테스트");
+        Debug.Log(string.Format("{0}에서 {1}까지 {2}번 애니메이션 재생", start, end, aniNum));
+        switch (aniNum)
+        {
+            case 0: break;
+            default: break;
+        }
     }
     void CreatSelect(string[] strArr)
     {
