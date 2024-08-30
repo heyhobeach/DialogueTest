@@ -240,15 +240,15 @@ public class UIManager : MonoBehaviour
     public void CloseSelceet(int choseIndex)
     {
         if (ContentArr.Length == 1) return;
-        Debug.Log("선택번호"+choseIndex);
+        //Debug.Log("선택번호"+choseIndex);
         //int childs = this.gameObject.transform.parent.transform.childCount;
         int childs = content.transform.parent.transform.childCount;
-        Debug.Log("자식수"+childs);
+        //Debug.Log("자식수"+childs);
         is_closing = true;
-        Debug.Log("선택 자식"+content.transform.parent.GetChild(choseIndex).GetComponent<TMP_Text>().text);
+        //Debug.Log("선택 자식"+content.transform.parent.GetChild(choseIndex).GetComponent<TMP_Text>().text);
         GameObject selectobj = content.transform.parent.GetChild(choseIndex).gameObject;
         string tmpstr = selectobj.GetComponent<TMP_Text>().text;
-        content.text = tmpstr;
+        //content.text = tmpstr;//여기가 문제 발생중
         start_pos=selectobj.transform.position;
         end_pos =content.transform.parent.GetChild(childs-1).transform.position;
         Debug.Log(string.Format("start_pos {0} end_pos{1}",start_pos,end_pos));
@@ -263,6 +263,7 @@ public class UIManager : MonoBehaviour
 
     public string UpSizeText(string _str,int start,int end, int size)//리턴으로 진행하는게 맞을듯 함 그런데 이제 텍스트 삽입이 여러개가 되어야한다면 해당 부분
     {
+        Debug.Log("UpsizeText 실행");
         string headtag = string.Format("<size={0}>", size);
         string tailtag = string.Format("</size>");
         string targetstring = "";
@@ -370,7 +371,7 @@ public class UIManager : MonoBehaviour
             float t = delta / duration;
             t = 1 - Mathf.Pow(1 - t, 3);
             float current = Mathf.Lerp(this.transform.position.x - 100, endPos, t);//시작위치,도착위치,t
-            ContentArr[count].transform.position = new Vector3(current, ContentArr[0].transform.position.y-(size*count), ContentArr[count].transform.position.z);
+            ContentArr[count].transform.position = new Vector3(current, ContentArr[0].transform.position.y-(size*count), ContentArr[count].transform.position.z);//여기 문제
             delta += Time.deltaTime;
             if(delta> duration)
             {
