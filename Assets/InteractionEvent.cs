@@ -237,6 +237,15 @@ public class InteractionEvent : MonoBehaviour
         }
         dialogue.line.y = DatabaseManager.instance.indexList[indexNum];//마지막 라인을 받아오기는 하지만 필요한건 마지막라인이 아닌 인덱스? 딕셔너리에 들어가는 그 y가 필요함
         dialogue.dialouses = DatabaseManager.instance.GetDialogues((int)dialogue.line.x, (int)dialogue.line.y);//y값 찾아오는 법
+        if(dialogue.dialouses == null)
+        {
+            Debug.Log("GetDialogues error");
+        }
+        else
+        {
+            Debug.Log("Getdialoogues succese" + dialogue.dialouses.Length);
+            Debug.Log(string.Format("content {0} num{1}", contentNum, num));
+        }
         command = Regex.Split(dialogue.dialouses[num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);//이게 위로 간다면?
         //Debug.Log("길이" + dialogue.dialouses.Length);
         return dialogue.dialouses;
@@ -262,15 +271,15 @@ public class InteractionEvent : MonoBehaviour
     {
 
 
-        if ((num <= dialogue.dialouses.Length))//line을 조절 해야함 대화가 끝나는 시점을 정하려면 line.y를 설정해야함
+        //if ((num <= dialogue.dialouses.Length))//line을 조절 해야함 대화가 끝나는 시점을 정하려면 line.y를 설정해야함
         {
 
             HandleDialogue();
         }
-        if (num > dialogue.dialouses.Length)
-        {
-            EndDialogue();
-        }
+        //if (num > dialogue.dialouses.Length)
+        //{
+        //    EndDialogue();
+        //}
     }
 
     private void HandleCommand()
@@ -352,6 +361,13 @@ public class InteractionEvent : MonoBehaviour
 
 
             command = Regex.Split(dialogue.dialouses[++num].command[contentNum], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);//이게 위로 간다면?
+            Debug.Log("Getdialoogues succese" + dialogue.dialouses.Length);
+            Debug.Log(string.Format("content {0} num{1}", contentNum, num));
+        }
+        else
+        {
+            num--;
+            EndDialogue();
         }
         contentNum = 0;
 
@@ -361,6 +377,11 @@ public class InteractionEvent : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F) || isSkip)//f누를때 문제 생기는듯?
         {
+            //EndDialogue();
+            //if (num > dialogue.dialouses.Length+1)//지금 바로 넘어가짐
+            //{
+            //    EndDialogue();
+            //}
             isSkip = false;
             //Debug.Log("선택 번호" + contentNum);
             _Uimanager.CloseSelceet(contentNum);
@@ -416,11 +437,12 @@ public class InteractionEvent : MonoBehaviour
     private void EndDialogue()
     {
         Debug.Log("대화끝");
-
-        if (Input.GetKeyDown(KeyCode.X) & (indexNum < DatabaseManager.instance.indexList.Count))
+        if ( (indexNum < DatabaseManager.instance.indexList.Count))
+        //if (Input.GetKeyDown(KeyCode.X) & (indexNum < DatabaseManager.instance.indexList.Count))
         {
             dialogue.line.x = ++dialogue.line.y;
             indexNum++;
+            num--;
             GetDialogue();
             Debug.Log(dialogue.dialouses.Length);
             num = 0;
@@ -572,7 +594,7 @@ public class InteractionEvent : MonoBehaviour
         Debug.Log("time over");
         if (contentlength > 1 && num <= dialogue.dialouses.Length)
         {
-            Debug.Log(string.Format("{0} num {1} contentNum", num - 1, contentNum));
+            Debug.Log(string.Format("{0} num {1} contentNum", num - 1, contentNum));    
             Debug.Log("Time over" + dialogue.dialouses[num - 1].context[0]);
             command = Regex.Split(dialogue.dialouses[num - 1].command[0], SPLIT_COMMAND_PASER, RegexOptions.IgnorePatternWhitespace);
             //command = spaceremove(command);

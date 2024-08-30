@@ -270,7 +270,9 @@ public class UIManager : MonoBehaviour
         {
             targetstring += _str[i];
         }
+        //Debug.Log(targetstring + "targetstring");
         string change_string = headtag+targetstring+tailtag;
+        Debug.Log(change_string + "targetstring");
         return _str.Replace(targetstring, change_string); 
     }
     public void TypingSpeed(int start,int end,int speed)
@@ -290,19 +292,19 @@ public class UIManager : MonoBehaviour
         float t = 0;
         float _duration = 1;
         content.transform.position = start_pos;
-        Debug.Log("출발 위치 " + start_pos+"content 위치"+content.transform.position);
+        //Debug.Log("출발 위치 " + start_pos+"content 위치"+content.transform.position);
         while (t < _duration)
         {
             //보간이동 내용
             t = t / _duration;
             //1 - (1 - x) * (1 - x);
             float lerp_y=Mathf.Lerp(content.transform.position.y, end_pos.y, t);
-            Debug.Log("lerp y is" + lerp_y);
+            //Debug.Log("lerp y is" + lerp_y);
             content.transform.position = new Vector3(content.transform.position.x, lerp_y, content.transform.position.z);
             t += Time.deltaTime;
             yield return null;
         }
-        Debug.Log("1초 끝");
+        //Debug.Log("1초 끝");
         is_closing = false;
         if (Act == null)
         {
