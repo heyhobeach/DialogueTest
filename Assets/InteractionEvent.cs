@@ -239,6 +239,12 @@ public class InteractionEvent : MonoBehaviour
             indexNum = DatabaseManager.instance.indexList.Count - 1;
         }
         dialogue.line.y = DatabaseManager.instance.indexList[indexNum];//마지막 라인을 받아오기는 하지만 필요한건 마지막라인이 아닌 인덱스? 딕셔너리에 들어가는 그 y가 필요함
+        if (dialogue.line.x > dialogue.line.y)
+        {
+            Debug.Log("대화 종료");
+            return null;
+        }
+        dialogue.dialouses = null;
         dialogue.dialouses = DatabaseManager.instance.GetDialogues((int)dialogue.line.x, (int)dialogue.line.y);//y값 찾아오는 법
         if(dialogue.dialouses == null)
         {
@@ -263,7 +269,6 @@ public class InteractionEvent : MonoBehaviour
     }
     private void Start()
     {
-
         GetDialogue();
         //command[0] = "";
         foreach (var i in DatabaseManager.instance.indexList)
@@ -479,7 +484,12 @@ public class InteractionEvent : MonoBehaviour
             indexNum++;
             //num--;
 
-            GetDialogue();
+            if (GetDialogue() == null)
+            {
+                Debug.Log("대화 끝났습니다");
+                _Uimanager.content.text = "대화종료";//추후 나중에 삭제 확인용
+                return;
+            }
             num = 0;
             SetNextContext();
             Debug.Log(dialogue.dialouses.Length);
