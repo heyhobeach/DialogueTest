@@ -281,7 +281,14 @@ public class InteractionEvent : MonoBehaviour
     private void Update()
     {
 
-
+        if (_Uimanager.is_closing)
+        {
+            Debug.Log("닫는중");
+        }
+        else
+        {
+            Debug.Log("열리는중");
+        }
         //if ((num <= dialogue.dialouses.Length))//line을 조절 해야함 대화가 끝나는 시점을 정하려면 line.y를 설정해야함
         {
 
@@ -402,7 +409,7 @@ public class InteractionEvent : MonoBehaviour
     }
     private void HandleDialogue()
     {
-        if (Input.GetKeyDown(KeyCode.F) || isSkip)//f누를때 문제 생기는듯?
+        if ((Input.GetKeyDown(KeyCode.F) || isSkip)&&!_Uimanager.is_closing)//f누를때 문제 생기는듯?
         {
 
             //EndDialogue();

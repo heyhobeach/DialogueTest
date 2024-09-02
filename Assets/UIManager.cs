@@ -313,6 +313,7 @@ public class UIManager : MonoBehaviour
         }
         else
         {
+            Debug.Log("액션 시작");
             Act();
         }
     }
