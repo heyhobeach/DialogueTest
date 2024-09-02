@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ using static UnityEditor.Timeline.TimelinePlaybackControls;
 
 public class UIManager : MonoBehaviour
 {
+    public Transform targetTransform;
     /// <summary>
     /// 선택지 생성한 오브젝트 담는 배열
     /// </summary>
@@ -68,6 +70,12 @@ public class UIManager : MonoBehaviour
         co = Typing("",isTyping);
         ContentArr = new TMP_Text[1];
         size= content.rectTransform.rect.size.y;
+        setTestPosition(targetTransform.position);
+    }
+
+    private void Update()
+    {
+        setTestPosition(targetTransform.position);
     }
     private void Awake()
     {
@@ -76,6 +84,18 @@ public class UIManager : MonoBehaviour
     }
 
     // Update is called once per frame
+
+    public void setTestPosition(Vector3 pos)
+    {
+        Vector3 _pos;
+        Transform dialogueUiTransform = this.transform.GetChild(0).GetComponent<Transform>();//스크린 좌표로 변환 필요
+        //dialogueUiTransform.position = pos;
+        dialogueUiTransform.position=Camera.main.WorldToScreenPoint(new Vector3(pos.x,pos.y+1,pos.z));//타겟 오브젝트 위치에 대사 오브젝트 위치 움직임
+        //_pos = pos;
+        //_pos = GetComponentInChildren<Transform>().position;
+        //_pos = pos;
+        Debug.Log(pos);
+    }
     public void Setname(string name)
     {
         namemesh.text = name;
